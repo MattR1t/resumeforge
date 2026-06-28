@@ -1,0 +1,5159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resume Builder</title>
+  <style>
+    :root {
+      --bg: #f4efe8;
+      --bg-soft: #e8eef9;
+      --panel: rgba(255, 255, 255, 0.8);
+      --panel-strong: rgba(255, 255, 255, 0.92);
+      --panel-border: rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 32px 100px rgba(15, 23, 42, 0.14);
+      --shadow-md: 0 20px 50px rgba(15, 23, 42, 0.08);
+      --text: #0f172a;
+      --muted: #617286;
+      --line: #d7e1ee;
+      --primary: #1663ff;
+      --primary-dark: #1149bb;
+      --primary-soft: #eaf1ff;
+      --success: #15803d;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --paper: #ffffff;
+      --paper-shadow: 0 36px 120px rgba(15, 23, 42, 0.18);
+      --radius-xl: 32px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --a4-width: 210mm;
+      --a4-min-height: 297mm;
+      --template-accent: #1663ff;
+      --template-accent-soft: #eff5ff;
+      --template-heading: #0f172a;
+      --template-sidebar: #f8fbff;
+      --font-ui: Inter, Arial, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-resume: Inter, Arial, system-ui, sans-serif;
+      --preview-scale: 1;
+      --preview-spacing: 1;
+      --editor-width: 1420px;
+    }
+
+    body.dark {
+      --bg: #0f172a;
+      --bg-soft: #16213a;
+      --panel: rgba(17, 25, 40, 0.72);
+      --panel-strong: rgba(15, 23, 42, 0.88);
+      --panel-border: rgba(148, 163, 184, 0.16);
+      --shadow-lg: 0 32px 100px rgba(2, 6, 23, 0.42);
+      --shadow-md: 0 20px 50px rgba(2, 6, 23, 0.26);
+      --text: #e5edf8;
+      --muted: #9caec4;
+      --line: #283548;
+      --primary-soft: rgba(22, 99, 255, 0.16);
+      --paper: #101828;
+      --paper-shadow: 0 36px 120px rgba(2, 6, 23, 0.5);
+      --template-heading: #f8fbff;
+      --template-sidebar: #111b2f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: var(--font-ui);
+      color: var(--text);
+      background:
+        radial-gradient(circle at 0% 0%, rgba(255, 210, 124, 0.22), transparent 24%),
+        radial-gradient(circle at 100% 0%, rgba(22, 99, 255, 0.16), transparent 22%),
+        radial-gradient(circle at 100% 100%, rgba(101, 165, 255, 0.12), transparent 24%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      width: 520px;
+      height: 520px;
+      border-radius: 999px;
+      pointer-events: none;
+      filter: blur(86px);
+      opacity: 0.3;
+      z-index: 0;
+    }
+
+    body::before {
+      top: -140px;
+      left: -100px;
+      background: rgba(255, 196, 102, 0.22);
+    }
+
+    body::after {
+      right: -120px;
+      bottom: -180px;
+      background: rgba(22, 99, 255, 0.16);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible,
+    a:focus-visible {
+      outline: 3px solid rgba(22, 99, 255, 0.22);
+      outline-offset: 2px;
+    }
+
+    .shell {
+      max-width: var(--editor-width);
+      margin: 0 auto;
+      padding: 18px 16px 56px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .section {
+      margin-top: 28px;
+    }
+
+    .scroll-reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .scroll-reveal.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .glass,
+    .panel,
+    .auth-card,
+    .feature-card,
+    .gallery-card,
+    .pricing-card,
+    .footer-card,
+    .metric-card,
+    .hero-card,
+    .workspace-card,
+    .dashboard-card,
+    .profile-menu,
+    .coming-soon-card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(18px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass::before,
+    .panel::before,
+    .auth-card::before,
+    .feature-card::before,
+    .gallery-card::before,
+    .pricing-card::before,
+    .footer-card::before,
+    .metric-card::before,
+    .hero-card::before,
+    .workspace-card::before,
+    .dashboard-card::before,
+    .profile-menu::before,
+    .coming-soon-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0));
+      pointer-events: none;
+    }
+
+    .btn,
+    .primary-btn,
+    .secondary-btn,
+    .ghost-btn,
+    .pill-btn,
+    .icon-btn,
+    .tiny-btn {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .primary-btn,
+    .pill-btn.active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #ffffff;
+      box-shadow: 0 18px 34px rgba(22, 99, 255, 0.28);
+    }
+
+    .secondary-btn,
+    .ghost-btn,
+    .pill-btn,
+    .tiny-btn,
+    .icon-btn {
+      background: var(--panel-strong);
+      color: var(--text);
+      border-color: var(--line);
+      box-shadow: var(--shadow-md);
+    }
+
+    .primary-btn:hover,
+    .secondary-btn:hover,
+    .ghost-btn:hover,
+    .pill-btn:hover,
+    .tiny-btn:hover,
+    .icon-btn:hover,
+    .nav-link:hover,
+    .template-preview:hover,
+    .dashboard-card:hover,
+    .feature-card:hover,
+    .gallery-card:hover,
+    .pricing-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .primary-btn,
+    .secondary-btn,
+    .ghost-btn {
+      padding: 12px 18px;
+    }
+
+    .pill-btn {
+      padding: 10px 14px;
+    }
+
+    .tiny-btn {
+      padding: 8px 12px;
+      font-size: 0.86rem;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 40;
+      margin-bottom: 24px;
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      border-radius: 999px;
+      overflow: visible;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #ffffff;
+      box-shadow: 0 14px 24px rgba(22, 99, 255, 0.24);
+    }
+
+    .topbar-nav {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .nav-link {
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .nav-link.active {
+      color: var(--primary);
+    }
+
+    .nav-link:hover {
+      color: var(--primary);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      overflow: visible;
+    }
+
+    .profile-chip {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-md);
+    }
+
+    .profile-chip.active {
+      display: inline-flex;
+    }
+
+    .profile-chip.active #profileMenuBtn {
+      transform: rotate(0deg);
+    }
+
+    .profile-chip.active #profileMenuBtn.open {
+      transform: rotate(180deg);
+    }
+
+    .profile-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    .profile-menu {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 280px;
+      border-radius: 22px;
+      padding: 14px;
+      display: none;
+      z-index: 80;
+    }
+
+    .profile-menu.open {
+      display: grid;
+      gap: 8px;
+      animation: dropdownIn 0.18s ease;
+    }
+
+    .profile-menu button {
+      border: 0;
+      background: transparent;
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .profile-menu button:hover {
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+    }
+
+    .profile-menu-header {
+      display: grid;
+      gap: 10px;
+      padding: 6px 6px 14px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 10px;
+    }
+
+    .profile-menu-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-menu-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #ffffff;
+      font-size: 0.92rem;
+      font-weight: 800;
+      box-shadow: 0 12px 24px rgba(22, 99, 255, 0.24);
+    }
+
+    .profile-menu-copy {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .profile-menu-copy strong,
+    .profile-menu-copy span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .profile-menu-copy strong {
+      font-size: 0.95rem;
+      letter-spacing: -0.02em;
+    }
+
+    .profile-menu-copy span {
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .profile-menu-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .profile-menu-section {
+      display: grid;
+      gap: 6px;
+    }
+
+    .profile-menu-label {
+      padding: 6px 10px 2px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .profile-menu-divider {
+      height: 1px;
+      background: var(--line);
+      margin: 6px 0;
+      opacity: 0.8;
+    }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      width: 44px;
+      height: 44px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hamburger span {
+      width: 18px;
+      height: 2px;
+      border-radius: 999px;
+      background: var(--text);
+    }
+
+    .mobile-nav {
+      display: none;
+      margin-top: 12px;
+      padding: 16px;
+      border-radius: 24px;
+    }
+
+    .mobile-nav.open {
+      display: grid;
+      gap: 12px;
+      animation: fadeUp 0.2s ease;
+    }
+
+    .mobile-nav a,
+    .mobile-nav button {
+      text-align: left;
+    }
+
+    .hero {
+      text-align: center;
+      padding-top: 16px;
+    }
+
+    .hero-badge,
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.74);
+      border: 1px solid rgba(22, 99, 255, 0.1);
+      color: #1746a2;
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      margin: 22px auto 14px;
+      max-width: 980px;
+      font-size: clamp(3rem, 5vw, 5.5rem);
+      line-height: 0.92;
+      letter-spacing: -0.07em;
+    }
+
+    .hero p {
+      max-width: 760px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.84;
+    }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .trust-strip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(22, 99, 255, 0.08);
+      box-shadow: var(--shadow-md);
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .trust-strip span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .trust-strip span::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      box-shadow: 0 0 0 5px rgba(22, 99, 255, 0.08);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 22px;
+      margin-top: 34px;
+      align-items: stretch;
+    }
+
+    .hero-card,
+    .metric-card {
+      border-radius: 28px;
+      padding: 22px;
+    }
+
+    .hero-card h3,
+    .metric-card h3 {
+      margin: 0;
+      font-size: 1.18rem;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-card p,
+    .metric-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .hero-metrics {
+      display: grid;
+      gap: 18px;
+    }
+
+    .mini-editor {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+    }
+
+    .mini-editor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .mini-field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .mini-field span {
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .mini-input,
+    .mini-textarea {
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow-md);
+    }
+
+    .mini-input {
+      height: 46px;
+    }
+
+    .mini-textarea {
+      height: 86px;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto 24px;
+    }
+
+    .section-header h2 {
+      margin: 14px 0 10px;
+      font-size: clamp(2rem, 3vw, 3rem);
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+
+    .section-header p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .features-grid,
+    .template-gallery,
+    .pricing-grid,
+    .dashboard-grid,
+    .future-grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .features-grid,
+    .template-gallery,
+    .future-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .feature-card,
+    .gallery-card,
+    .pricing-card,
+    .dashboard-card,
+    .workspace-card {
+      border-radius: 26px;
+      padding: 22px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+    .feature-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      background: linear-gradient(135deg, var(--primary-soft), #ffffff);
+      box-shadow: 0 14px 24px rgba(22, 99, 255, 0.12);
+      font-size: 1.24rem;
+      font-weight: 900;
+      margin-bottom: 16px;
+    }
+
+    .feature-card h3,
+    .gallery-card strong,
+    .pricing-card h3,
+    .dashboard-card h3,
+    .workspace-card h3 {
+      margin: 0 0 10px;
+      letter-spacing: -0.03em;
+    }
+
+    .feature-card p,
+    .pricing-card p,
+    .dashboard-card p,
+    .workspace-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+
+    .template-preview {
+      height: 236px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .gallery-card.active {
+      border-color: rgba(22, 99, 255, 0.22);
+      box-shadow: 0 24px 60px rgba(22, 99, 255, 0.12);
+    }
+
+    .template-preview.modern {
+      background: linear-gradient(90deg, #f4f8ff 0 34%, #ffffff 34% 100%);
+    }
+
+    .template-preview.classic {
+      background: #ffffff;
+    }
+
+    .template-preview.executive {
+      background: linear-gradient(180deg, #f5fffb 0%, #ffffff 100%);
+    }
+
+    .template-preview.minimal {
+      background: linear-gradient(180deg, #fdfbff 0%, #ffffff 100%);
+    }
+
+    .template-preview.creative {
+      background: linear-gradient(135deg, #f7f2ff 0%, #ffffff 100%);
+    }
+
+    .template-preview.professional {
+      background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+    }
+
+    .template-mini-header {
+      height: 48px;
+      margin: 16px 16px 12px;
+      border-bottom: 2px solid #e4ebf6;
+      position: relative;
+    }
+
+    .template-mini-header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 58%;
+      height: 12px;
+      border-radius: 999px;
+      background: #1f2937;
+    }
+
+    .template-mini-header::after {
+      content: "";
+      position: absolute;
+      top: 20px;
+      left: 0;
+      width: 70%;
+      height: 7px;
+      border-radius: 999px;
+      background: #cbd7e5;
+    }
+
+    .template-sidebar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 34%;
+      border-right: 1px solid #e6edf7;
+      background: rgba(240, 246, 255, 0.9);
+    }
+
+    .template-sidebar.executive {
+      background: rgba(239, 255, 250, 0.95);
+    }
+
+    .template-sidebar.minimal {
+      background: rgba(248, 245, 255, 0.95);
+    }
+
+    .template-sidebar.creative {
+      background: rgba(248, 238, 255, 0.95);
+    }
+
+    .template-lines {
+      display: grid;
+      gap: 10px;
+      padding: 0 16px 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .template-lines.with-sidebar {
+      margin-left: 34%;
+    }
+
+    .line {
+      height: 8px;
+      border-radius: 999px;
+      background: #d7e0ec;
+    }
+
+    .line.short { width: 58%; }
+    .line.medium { width: 78%; }
+    .line.long { width: 100%; }
+
+    .pricing-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .pricing-badge {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .pricing-price {
+      margin: 12px 0 16px;
+      font-size: 2.4rem;
+      line-height: 1;
+      letter-spacing: -0.06em;
+      font-weight: 800;
+    }
+
+    .pricing-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .pricing-list span {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .pricing-list span::before {
+      content: "•";
+      color: var(--primary);
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    .workspace {
+      margin-top: 28px;
+      display: grid;
+      gap: 22px;
+    }
+
+    .workspace-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 88px;
+      z-index: 20;
+      padding: 14px 16px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(22, 99, 255, 0.08);
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(16px);
+    }
+
+    .workspace-tabs,
+    .workspace-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .editor-jumpbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 14px 0 18px;
+    }
+
+    .jump-chip {
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      color: var(--muted);
+      box-shadow: var(--shadow-md);
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    }
+
+    .jump-chip:hover {
+      transform: translateY(-1px);
+      border-color: rgba(22, 99, 255, 0.2);
+      color: var(--primary);
+      background: rgba(255, 255, 255, 0.98);
+    }
+
+    .workspace-card {
+      padding: 24px;
+    }
+
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: minmax(310px, 420px) minmax(0, 1fr) minmax(280px, 320px);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .panel,
+    .workspace-card {
+      border-radius: 28px;
+    }
+
+    .panel {
+      padding: 24px;
+    }
+
+    .card-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .card-title-row h3,
+    .card-title-row h2 {
+      margin: 0;
+      letter-spacing: -0.03em;
+    }
+
+    .card-title-row p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.94rem;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .status-pill.success {
+      background: rgba(21, 128, 61, 0.12);
+      color: var(--success);
+    }
+
+    .progress {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.18);
+      overflow: hidden;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      transition: width 0.25s ease;
+    }
+
+    .field-stack,
+    .section-stack,
+    .list-stack,
+    .dashboard-grid,
+    .settings-grid,
+    .stats-grid,
+    .analyzer-stack,
+    .ats-grid,
+    .coverletter-grid,
+    .faq-grid,
+    .shortcut-grid,
+    .onboarding-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field,
+    .editor-entry,
+    .setting-card,
+    .ats-card,
+    .stat-card,
+    .resume-list-card,
+    .upload-card,
+    .future-card {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label,
+    .editor-entry-header strong,
+    .setting-card strong,
+    .ats-card strong,
+    .stat-card strong {
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field textarea,
+    .field select,
+    .search-input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--panel-strong);
+      color: var(--text);
+      padding: 14px 15px;
+      outline: none;
+      resize: vertical;
+      box-shadow: var(--shadow-md);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .field textarea {
+      min-height: 110px;
+      line-height: 1.65;
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus,
+    .search-input:focus {
+      border-color: rgba(22, 99, 255, 0.4);
+      box-shadow: 0 0 0 4px rgba(22, 99, 255, 0.08), var(--shadow-md);
+      transform: translateY(-1px);
+    }
+
+    .search-row,
+    .toolbar-row,
+    .entry-actions,
+    .dashboard-actions,
+    .inline-actions,
+    .settings-inline {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .dashboard-tools {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .dashboard-hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .dashboard-hero h2 {
+      margin: 0;
+      letter-spacing: -0.04em;
+    }
+
+    .dashboard-hero p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .dashboard-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .dashboard-card {
+      min-height: 220px;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 0.84rem;
+      margin: 10px 0 16px;
+    }
+
+    .favorite-star {
+      color: #f59e0b;
+      font-size: 1rem;
+    }
+
+    .favorite-star.off {
+      color: #cbd5e1;
+    }
+
+    .resume-meta-preview {
+      display: grid;
+      gap: 8px;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.6);
+      margin-top: auto;
+    }
+
+    .resume-meta-preview .line {
+      background: #d2dae6;
+    }
+
+    .empty-state {
+      padding: 26px;
+      border-radius: 22px;
+      border: 1px dashed var(--line);
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .section-block {
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.52);
+      display: grid;
+      gap: 14px;
+    }
+
+    .section-block-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .section-block-header h4 {
+      margin: 0;
+      font-size: 0.86rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .editor-entry {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      box-shadow: var(--shadow-md);
+    }
+
+    .editor-entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .editor-entry-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .editor-entry-grid.full {
+      grid-template-columns: 1fr;
+    }
+
+    .resume-stage {
+      padding: 18px;
+      border-radius: 26px;
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.88), transparent 42%),
+        linear-gradient(180deg, #e9eef5, #dfe8f3);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .resume-stage::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+      background-size: 30px 30px;
+      opacity: 0.38;
+      pointer-events: none;
+    }
+
+    .resume-wrap {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+      padding: 6px;
+    }
+
+    .resume-sheet {
+      width: min(100%, var(--a4-width));
+      min-height: var(--a4-min-height);
+      background: var(--paper);
+      color: var(--text);
+      box-shadow: var(--paper-shadow);
+      border-radius: 24px;
+      overflow: hidden;
+      transform: scale(var(--preview-scale));
+      transform-origin: top center;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      font-family: var(--font-resume);
+    }
+
+    .resume-sheet:hover {
+      box-shadow: 0 46px 130px rgba(15, 23, 42, 0.22);
+    }
+
+    .resume-sheet[data-template="modern"] {
+      --template-accent: #1663ff;
+      --template-accent-soft: #eff5ff;
+      --template-heading: #0f172a;
+      --template-sidebar: #f8fbff;
+      display: grid;
+      grid-template-columns: 245px 1fr;
+    }
+
+    .resume-sheet[data-template="classic"] {
+      --template-accent: #475569;
+      --template-accent-soft: #f5f6f8;
+      --template-heading: #111827;
+      --template-sidebar: #fbfbfb;
+      padding: calc(40px * var(--preview-spacing));
+    }
+
+    .resume-sheet[data-template="executive"] {
+      --template-accent: #0f766e;
+      --template-accent-soft: #e8fbf7;
+      --template-heading: #0b1f1b;
+      --template-sidebar: #f5fffd;
+      display: grid;
+      grid-template-columns: 250px 1fr;
+    }
+
+    .resume-sheet[data-template="minimal"] {
+      --template-accent: #7c3aed;
+      --template-accent-soft: #f4efff;
+      --template-heading: #261b42;
+      --template-sidebar: #fcfbff;
+      display: grid;
+      grid-template-columns: 230px 1fr;
+    }
+
+    .resume-sheet[data-template="creative"] {
+      --template-accent: #ec4899;
+      --template-accent-soft: #fdf0f8;
+      --template-heading: #3b2042;
+      --template-sidebar: #fff9fd;
+      display: grid;
+      grid-template-columns: 235px 1fr;
+    }
+
+    .resume-sheet[data-template="professional"] {
+      --template-accent: #1d4ed8;
+      --template-accent-soft: #edf4ff;
+      --template-heading: #102448;
+      --template-sidebar: #f7fbff;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+    }
+
+    .resume-sidebar {
+      background: var(--template-sidebar);
+      border-right: 1px solid #e2e8f0;
+      padding: calc(36px * var(--preview-spacing)) calc(24px * var(--preview-spacing));
+    }
+
+    .resume-main {
+      padding: calc(40px * var(--preview-spacing)) calc(36px * var(--preview-spacing));
+    }
+
+    .resume-header {
+      border-bottom: 2px solid var(--template-accent-soft);
+      padding-bottom: calc(18px * var(--preview-spacing));
+      margin-bottom: calc(26px * var(--preview-spacing));
+    }
+
+    .resume-name {
+      margin: 0;
+      color: var(--template-heading);
+      font-size: calc(2.35rem * var(--preview-spacing));
+      line-height: 0.98;
+      letter-spacing: -0.05em;
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .resume-contact {
+      margin-top: 12px;
+      color: #475569;
+      font-size: calc(0.92rem * var(--preview-spacing));
+      line-height: 1.8;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+    }
+
+    .resume-sheet[data-template="classic"] .resume-contact {
+      display: block;
+    }
+
+    .resume-sheet[data-template="classic"] .resume-main,
+    .resume-sheet[data-template="classic"] .resume-sidebar {
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .resume-sheet[data-template="classic"] .resume-header {
+      margin-bottom: 28px;
+    }
+
+    .resume-sheet[data-template="classic"] .contact-item {
+      display: inline;
+      margin-right: 14px;
+    }
+
+    .resume-sheet[data-template="classic"] .contact-item::after {
+      content: "|";
+      margin-left: 14px;
+      color: #94a3b8;
+    }
+
+    .resume-sheet[data-template="classic"] .contact-item:last-child::after {
+      content: "";
+      margin: 0;
+    }
+
+    .resume-sheet[data-template="creative"] .resume-sidebar {
+      background: linear-gradient(180deg, #fff4fb, #fffafd);
+    }
+
+    .resume-sheet[data-template="executive"] .resume-sidebar {
+      background: linear-gradient(180deg, rgba(15, 118, 110, 0.06), rgba(15, 118, 110, 0)), var(--template-sidebar);
+    }
+
+    .resume-section + .resume-section {
+      margin-top: calc(24px * var(--preview-spacing));
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      color: var(--template-heading);
+      font-size: calc(0.82rem * var(--preview-spacing));
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: #dbe4ef;
+    }
+
+    .resume-sheet[data-template="minimal"] .section-title::after {
+      background: linear-gradient(90deg, #e7dcff, transparent);
+    }
+
+    .resume-sheet[data-template="creative"] .section-title::after {
+      background: linear-gradient(90deg, #ffd1eb, transparent);
+    }
+
+    .summary-text,
+    .entry-text {
+      margin: 0;
+      color: #334155;
+      font-size: calc(0.94rem * var(--preview-spacing));
+      line-height: 1.8;
+      white-space: pre-line;
+    }
+
+    .skills-list,
+    .language-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .skill-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 8px 13px;
+      border-radius: 999px;
+      background: var(--template-accent-soft);
+      color: var(--template-accent);
+      border: 1px solid transparent;
+      font-size: calc(0.84rem * var(--preview-spacing));
+      font-weight: 700;
+    }
+
+    .resume-sheet[data-template="classic"] .skill-chip {
+      background: transparent;
+      border-color: #d1d5db;
+      color: #1f2937;
+    }
+
+    .sidebar-card,
+    .content-card {
+      padding: 16px 18px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.04);
+    }
+
+    .resume-sheet[data-template="classic"] .sidebar-card,
+    .resume-sheet[data-template="classic"] .content-card {
+      border-radius: 0;
+      border-left: 0;
+      border-right: 0;
+      border-top: 0;
+      box-shadow: none;
+      padding: 0 0 14px;
+      background: transparent;
+    }
+
+    .preview-side-panels {
+      display: grid;
+      gap: 16px;
+    }
+
+    .ats-grid,
+    .stats-grid,
+    .settings-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .ats-card,
+    .stat-card,
+    .setting-card,
+    .upload-card,
+    .future-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.58);
+      box-shadow: var(--shadow-md);
+    }
+
+    .meta-list,
+    .suggestion-list,
+    .missing-list,
+    .simple-list {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .meta-list span,
+    .suggestion-list span,
+    .missing-list span,
+    .simple-list span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .meta-list span::before,
+    .suggestion-list span::before,
+    .missing-list span::before,
+    .simple-list span::before {
+      content: "•";
+      color: var(--primary);
+      font-size: 1rem;
+    }
+
+    .coverletter-layout {
+      display: grid;
+      grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+      gap: 22px;
+    }
+
+    .cover-preview-sheet {
+      width: min(100%, 210mm);
+      min-height: 297mm;
+      background: var(--paper);
+      border-radius: 24px;
+      box-shadow: var(--paper-shadow);
+      padding: 44px 42px;
+      transform: scale(var(--preview-scale));
+      transform-origin: top center;
+      color: var(--text);
+      font-family: var(--font-resume);
+    }
+
+    .cover-preview-sheet h2 {
+      margin: 0;
+      font-size: 2rem;
+      letter-spacing: -0.04em;
+    }
+
+    .cover-preview-sheet p {
+      margin: 0;
+      color: #334155;
+      line-height: 1.82;
+      white-space: pre-line;
+    }
+
+    .faq-item,
+    .shortcut-item,
+    .support-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.58);
+      box-shadow: var(--shadow-md);
+    }
+
+    .faq-item strong,
+    .shortcut-item strong,
+    .support-card strong {
+      display: block;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .faq-item p,
+    .shortcut-item p,
+    .support-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.94rem;
+    }
+
+    .social-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .social-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      box-shadow: var(--shadow-md);
+      font-size: 0.86rem;
+      font-weight: 800;
+    }
+
+    .onboarding-option {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.62);
+      color: var(--text);
+      text-align: left;
+      box-shadow: var(--shadow-md);
+    }
+
+    .onboarding-option strong {
+      display: block;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .onboarding-option span {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.42);
+      backdrop-filter: blur(12px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+      z-index: 60;
+    }
+
+    .modal.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .auth-card,
+    .coming-soon-card {
+      width: min(100%, 480px);
+      padding: 28px;
+      border-radius: 30px;
+      transform: translateY(16px) scale(0.98);
+      transition: transform 0.3s ease;
+    }
+
+    .modal.open .auth-card,
+    .modal.open .coming-soon-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .auth-head,
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .auth-head h3,
+    .modal-head h3 {
+      margin: 0;
+      font-size: 1.3rem;
+      letter-spacing: -0.03em;
+    }
+
+    .auth-head p,
+    .modal-head p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .auth-view {
+      display: none;
+    }
+
+    .auth-view.active {
+      display: block;
+      animation: fadeUp 0.24s ease;
+    }
+
+    .auth-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .settings-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .settings-panel {
+      display: none;
+      gap: 14px;
+    }
+
+    .settings-panel.active {
+      display: grid;
+      animation: fadeUp 0.2s ease;
+    }
+
+    .settings-note {
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.56);
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.92rem;
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.56);
+    }
+
+    .toggle-copy {
+      display: grid;
+      gap: 6px;
+    }
+
+    .toggle-copy strong {
+      font-size: 0.94rem;
+    }
+
+    .toggle-copy span {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .toggle-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      margin-top: 2px;
+      flex: 0 0 auto;
+    }
+
+    .auth-status {
+      min-height: 24px;
+      margin-top: 10px;
+      color: var(--success);
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .auth-switch {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      text-align: center;
+    }
+
+    .auth-switch button {
+      background: transparent;
+      border: 0;
+      color: var(--primary);
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .upload-dropzone {
+      padding: 28px;
+      border-radius: 24px;
+      border: 1px dashed rgba(22, 99, 255, 0.3);
+      background: linear-gradient(180deg, rgba(234, 241, 255, 0.65), rgba(255, 255, 255, 0.72));
+      text-align: center;
+      display: grid;
+      gap: 14px;
+    }
+
+    .upload-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      background: linear-gradient(135deg, var(--primary-soft), #ffffff);
+      color: var(--primary);
+      font-size: 1.8rem;
+      box-shadow: 0 18px 30px rgba(22, 99, 255, 0.12);
+    }
+
+    .upload-progress {
+      display: none;
+      gap: 10px;
+    }
+
+    .upload-progress.active {
+      display: grid;
+    }
+
+    .future-grid {
+      margin-top: 18px;
+    }
+
+    .future-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px dashed rgba(22, 99, 255, 0.25);
+      background: rgba(255, 255, 255, 0.54);
+    }
+
+    .footer-card {
+      border-radius: 28px;
+      padding: 28px;
+    }
+
+    .footer-cta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      padding: 18px 20px;
+      margin-bottom: 24px;
+      border-radius: 22px;
+      border: 1px solid rgba(22, 99, 255, 0.12);
+      background: linear-gradient(135deg, rgba(22, 99, 255, 0.08), rgba(255, 255, 255, 0.44));
+      box-shadow: var(--shadow-md);
+    }
+
+    .footer-cta h3 {
+      margin: 0;
+      font-size: 1.14rem;
+      letter-spacing: -0.03em;
+    }
+
+    .footer-cta p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.94rem;
+    }
+
+    .toast-stack {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      display: grid;
+      gap: 10px;
+      z-index: 120;
+      pointer-events: none;
+    }
+
+    .toast {
+      min-width: 240px;
+      max-width: 320px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(22, 99, 255, 0.12);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--text);
+      box-shadow: 0 20px 44px rgba(15, 23, 42, 0.14);
+      backdrop-filter: blur(16px);
+      pointer-events: auto;
+      animation: toastIn 0.22s ease;
+    }
+
+    .toast strong {
+      display: block;
+      font-size: 0.92rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .toast span {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr 1fr;
+      gap: 20px;
+    }
+
+    .footer-brand p,
+    .footer-links a,
+    .footer-copy {
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 0.95rem;
+    }
+
+    .footer-links {
+      display: grid;
+      gap: 10px;
+    }
+
+    .footer-links strong {
+      font-size: 0.92rem;
+    }
+
+    .footer-bottom {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes dropdownIn {
+      from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @media (max-width: 1240px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .dashboard-grid,
+      .features-grid,
+      .template-gallery,
+      .future-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 1080px) {
+      .topbar-nav,
+      #navGetStartedBtn {
+        display: none;
+      }
+
+      .hamburger {
+        display: inline-flex;
+      }
+
+      .hero-grid,
+      .coverletter-layout,
+      .pricing-grid,
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .shell {
+        padding: 16px 12px 40px;
+      }
+
+      .hero h1 {
+        font-size: clamp(2.4rem, 9vw, 3.4rem);
+      }
+
+      .hero-actions .primary-btn,
+      .hero-actions .secondary-btn,
+      .hero-actions .ghost-btn,
+      .topbar-actions .profile-chip,
+      .mobile-nav .primary-btn,
+      .mobile-nav .secondary-btn {
+        width: 100%;
+      }
+
+      .trust-strip,
+      .footer-cta {
+        border-radius: 22px;
+      }
+
+      .features-grid,
+      .template-gallery,
+      .dashboard-grid,
+      .future-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .editor-entry-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .resume-sheet {
+        width: 100%;
+        min-height: auto;
+        transform: none;
+        border-radius: 18px;
+      }
+
+      .resume-stage {
+        padding: 12px;
+      }
+
+      .resume-sheet[data-template="modern"],
+      .resume-sheet[data-template="executive"],
+      .resume-sheet[data-template="minimal"],
+      .resume-sheet[data-template="creative"],
+      .resume-sheet[data-template="professional"] {
+        grid-template-columns: 1fr;
+      }
+
+      .resume-sidebar {
+        border-right: 0;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .resume-sidebar,
+      .resume-main {
+        padding: 28px 22px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+      }
+
+      .topbar,
+      .hero,
+      .features,
+      .template-section,
+      .dashboard-section,
+      .pricing,
+      .footer,
+      .coverletter-section,
+      .analyzer-section,
+      .future-section,
+      .editor-left,
+      .editor-right {
+        display: none !important;
+      }
+
+      .editor-center,
+      .resume-stage,
+      .resume-wrap,
+      .resume-sheet {
+        display: block !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      .resume-sheet {
+        width: 210mm !important;
+        min-height: 297mm !important;
+        border-radius: 0 !important;
+        transform: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <nav class="topbar">
+      <div class="topbar-inner glass">
+        <a href="#top" class="brand">
+          <span class="brand-mark">R</span>
+          <span>Resume Builder</span>
+        </a>
+
+        <div class="topbar-nav">
+          <a class="nav-link" href="#features">Features</a>
+          <a class="nav-link" href="#templates">Templates</a>
+          <a class="nav-link" href="#pricing">Pricing</a>
+          <a class="nav-link" href="#about">About</a>
+        </div>
+
+        <div class="topbar-actions">
+          <button id="navLoginBtn" class="secondary-btn" type="button">Log In</button>
+          <button id="navGetStartedBtn" class="primary-btn" type="button">Get Started</button>
+          <div id="profileChip" class="profile-chip">
+            <span id="profileAvatar" class="profile-avatar">A</span>
+            <span id="profileName">Guest</span>
+            <button id="profileMenuBtn" class="icon-btn" type="button" aria-label="Open profile menu">▾</button>
+          </div>
+          <div id="profileMenu" class="profile-menu">
+            <div class="profile-menu-header">
+              <div class="profile-menu-user">
+                <span id="profileMenuAvatar" class="profile-menu-avatar">A</span>
+                <div class="profile-menu-copy">
+                  <strong id="profileMenuName">Guest</strong>
+                  <span id="profileMenuEmail">guest@example.com</span>
+                </div>
+              </div>
+              <div id="profileMenuMeta" class="profile-menu-meta"></div>
+            </div>
+            <div class="profile-menu-section">
+              <div class="profile-menu-label">Quick Actions</div>
+              <button data-go="dashboard">Dashboard</button>
+              <button data-go="newresume">Create New Resume</button>
+              <button data-go="coverletters">Cover Letters</button>
+            </div>
+            <div class="profile-menu-divider"></div>
+            <div class="profile-menu-section">
+              <div class="profile-menu-label">Account</div>
+              <button data-go="resumes">Saved Resumes</button>
+              <button data-go="settings">Account Settings</button>
+              <button data-go="privacy">Privacy & Security</button>
+              <button data-go="appearance">Appearance</button>
+              <button data-go="help">Help</button>
+            </div>
+            <div class="profile-menu-divider"></div>
+            <button id="profileSignOutBtn">Sign Out</button>
+          </div>
+          <button id="hamburgerBtn" class="hamburger secondary-btn" type="button" aria-label="Open mobile menu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </div>
+
+      <div id="mobileNav" class="mobile-nav glass">
+        <a href="#features" class="secondary-btn">Features</a>
+        <a href="#templates" class="secondary-btn">Templates</a>
+        <a href="#pricing" class="secondary-btn">Pricing</a>
+        <a href="#about" class="secondary-btn">About</a>
+        <button id="mobileLoginBtn" class="secondary-btn" type="button">Log In</button>
+        <button id="mobileGetStartedBtn" class="primary-btn" type="button">Get Started</button>
+      </div>
+    </nav>
+
+    <section id="top" class="hero">
+      <div class="hero-badge">Professional Resume Builder</div>
+      <h1>Build a Professional Resume in Minutes</h1>
+      <p>Create beautiful ATS-friendly resumes with live editing, professional templates, and instant PDF export.</p>
+      <div class="hero-actions">
+        <button id="heroLoginBtn" class="secondary-btn" type="button">Log In</button>
+        <button id="heroGetStartedBtn" class="primary-btn" type="button">Get Started</button>
+        <button id="jumpPreviewBtn" class="secondary-btn" type="button">Jump to Preview</button>
+      </div>
+
+      <div class="trust-strip">
+        <span>ATS-friendly layouts</span>
+        <span>Instant local auto-save</span>
+        <span>One-click PDF export</span>
+      </div>
+
+      <div class="hero-grid scroll-reveal">
+        <div class="hero-card glass">
+          <h3>Live editing experience</h3>
+          <p>Write once, preview instantly, switch templates, and export polished resumes without leaving the page.</p>
+          <div class="mini-editor">
+            <div class="mini-editor-grid">
+              <div class="mini-field">
+                <span>Full Name</span>
+                <div class="mini-input"></div>
+              </div>
+              <div class="mini-field">
+                <span>Email</span>
+                <div class="mini-input"></div>
+              </div>
+              <div class="mini-field">
+                <span>Experience</span>
+                <div class="mini-input"></div>
+              </div>
+              <div class="mini-field">
+                <span>Skills</span>
+                <div class="mini-input"></div>
+              </div>
+              <div class="mini-field" style="grid-column:1 / -1;">
+                <span>Summary</span>
+                <div class="mini-textarea"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-metrics">
+          <div class="metric-card glass">
+            <h3>6 ATS-friendly templates</h3>
+            <p>Choose between Modern, Classic, Executive, Minimal, Creative, and Professional layouts.</p>
+          </div>
+          <div class="metric-card glass">
+            <h3>Auto-save + dashboard</h3>
+            <p>Keep everything stored locally, manage saved resumes, and return exactly where you left off.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="section features scroll-reveal">
+      <div class="section-header">
+        <div class="eyebrow">Features</div>
+        <h2>Everything needed for a modern resume workflow</h2>
+        <p>Build, refine, analyze, export, and manage resumes from a single polished workspace.</p>
+      </div>
+
+      <div class="features-grid">
+        <article class="feature-card glass">
+          <div class="feature-icon">✦</div>
+          <h3>Live Resume Preview</h3>
+          <p>See every edit reflected instantly in a professional A4-ready document layout.</p>
+        </article>
+        <article class="feature-card glass">
+          <div class="feature-icon">▣</div>
+          <h3>Professional Templates</h3>
+          <p>Switch between multiple polished, ATS-friendly layouts optimized for clarity.</p>
+        </article>
+        <article class="feature-card glass">
+          <div class="feature-icon">↓</div>
+          <h3>One-Click PDF Export</h3>
+          <p>Download resumes and cover letters instantly without losing formatting.</p>
+        </article>
+        <article class="feature-card glass">
+          <div class="feature-icon">AI</div>
+          <h3>AI Resume Assistant</h3>
+          <p>Coming soon: improve summaries, tailor resumes, and generate stronger bullets.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="templates" class="section template-section scroll-reveal">
+      <div class="section-header">
+        <div class="eyebrow">Template Gallery</div>
+        <h2>Visual resume templates for every style</h2>
+        <p>Select a template preview below to instantly activate it in the editor and live preview.</p>
+      </div>
+
+      <div class="template-gallery" id="templateGallery"></div>
+    </section>
+
+    <section id="workspace" class="section workspace scroll-reveal">
+      <div class="workspace-bar">
+        <div class="workspace-tabs">
+          <button class="pill-btn active" data-view="dashboard" type="button">Dashboard</button>
+          <button class="pill-btn" data-view="editor" type="button">Resume Editor</button>
+          <button class="pill-btn" data-view="analyzer" type="button">Resume Analyzer</button>
+          <button class="pill-btn" data-view="coverletter" type="button">Cover Letter</button>
+          <button class="pill-btn" data-view="settings" type="button">Settings</button>
+          <button class="pill-btn" data-view="help" type="button">Help</button>
+        </div>
+        <div class="workspace-actions">
+          <button id="workspaceSettingsBtn" class="secondary-btn" type="button">Settings</button>
+          <span id="saveIndicator" class="status-pill success">Saved ✓</span>
+          <button id="clearResumeBtn" class="secondary-btn" type="button">Clear Resume</button>
+        </div>
+      </div>
+
+      <section id="dashboardView" class="workspace-card dashboard-section glass">
+        <div class="dashboard-hero">
+          <div>
+            <h2 id="dashboardWelcomeTitle">Resume Dashboard</h2>
+            <p id="dashboardWelcomeText">Create, organize, favorite, search, and reopen resumes from one place.</p>
+          </div>
+          <div class="inline-actions">
+            <button id="createResumeBtn" class="primary-btn" type="button">Create New Resume</button>
+          </div>
+        </div>
+
+        <div class="dashboard-tools">
+          <div class="search-row">
+            <input id="resumeSearchInput" class="search-input" type="search" placeholder="Search resumes">
+            <select id="resumeSortSelect" class="field select">
+              <option value="updated">Recently Edited</option>
+              <option value="name">Sort by Name</option>
+              <option value="created">Date Created</option>
+              <option value="favorite">Favorites First</option>
+            </select>
+          </div>
+          <div class="stats-grid" id="dashboardStats"></div>
+        </div>
+
+        <div id="dashboardGrid" class="dashboard-grid"></div>
+      </section>
+
+      <section id="editorView" class="workspace-card glass">
+        <div class="workspace-grid">
+          <aside class="editor-left">
+            <div id="editorBasicsPanel" class="panel">
+              <div class="card-title-row">
+                <div>
+                  <h3>Resume Editor</h3>
+                  <p>Expand every section, add multiple entries, reorder content, and auto-save as you type.</p>
+                </div>
+              </div>
+
+              <div class="status-row">
+                <span id="currentResumeNameBadge" class="status-pill">Active Resume</span>
+                <button id="favoriteResumeBtn" class="secondary-btn tiny-btn" type="button">☆ Favorite</button>
+              </div>
+
+              <div class="editor-jumpbar">
+                <button class="jump-chip" type="button" data-jump-target="editorBasicsPanel">Basics</button>
+                <button class="jump-chip" type="button" data-jump-target="editorSectionsPanel">Sections</button>
+                <button class="jump-chip" type="button" data-jump-target="editorPreviewPanel">Preview</button>
+                <button class="jump-chip" type="button" data-jump-target="editorInsightsPanel">Insights</button>
+              </div>
+
+              <div class="field-stack">
+                <div class="field">
+                  <label for="resumeNameInput">Resume Name</label>
+                  <input id="resumeNameInput" type="text" placeholder="Product Manager Resume">
+                </div>
+                <div class="field">
+                  <label for="resumeTemplateSelect">Template</label>
+                  <select id="resumeTemplateSelect"></select>
+                </div>
+                <div class="field">
+                  <label for="fullNameInput">Full Name</label>
+                  <input id="fullNameInput" type="text" placeholder="Amelia Carter">
+                </div>
+                <div class="field">
+                  <label for="headlineInput">Professional Headline</label>
+                  <input id="headlineInput" type="text" placeholder="Operations Coordinator">
+                </div>
+                <div class="field">
+                  <label for="emailInput">Email</label>
+                  <input id="emailInput" type="email" placeholder="amelia.carter@email.com">
+                </div>
+                <div class="field">
+                  <label for="phoneInput">Phone</label>
+                  <input id="phoneInput" type="tel" placeholder="(415) 555-0182">
+                </div>
+                <div class="field">
+                  <label for="locationInput">Location</label>
+                  <input id="locationInput" type="text" placeholder="Seattle, Washington">
+                </div>
+                <div class="field">
+                  <label for="websiteInput">Website / LinkedIn</label>
+                  <input id="websiteInput" type="text" placeholder="linkedin.com/in/amelia-carter">
+                </div>
+                <div class="field">
+                  <label for="summaryInput">Professional Summary</label>
+                  <textarea id="summaryInput" placeholder="Operations and project professional with experience coordinating cross-functional teams, improving internal processes, and delivering high-quality client work on schedule."></textarea>
+                </div>
+                <div class="field">
+                  <label for="skillsInput">Skills</label>
+                  <textarea id="skillsInput" placeholder="Project Coordination, Client Communication, Process Improvement, Excel, Scheduling"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div id="editorSectionsPanel" class="panel section-block" style="margin-top:18px;">
+              <div class="section-block-header">
+                <h4>Dynamic Sections</h4>
+              </div>
+              <div id="dynamicSections" class="section-stack"></div>
+            </div>
+          </aside>
+
+          <section class="editor-center">
+            <div id="editorPreviewPanel" class="panel">
+              <div class="card-title-row">
+                <div>
+                  <h3>Live Preview</h3>
+                  <p>A professional print-style preview updates instantly as you edit.</p>
+                </div>
+                <div class="inline-actions">
+                  <span class="status-pill">A4 Preview</span>
+                  <button id="downloadResumePdfBtn" class="primary-btn" type="button">Download PDF</button>
+                </div>
+              </div>
+
+              <div class="resume-stage">
+                <div class="resume-wrap">
+                  <article id="resumePreview" class="resume-sheet" data-template="modern"></article>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside class="editor-right">
+            <div id="editorInsightsPanel" class="preview-side-panels">
+              <div class="panel">
+                <div class="card-title-row">
+                  <div>
+                    <h3>Resume Completeness</h3>
+                    <p>Track which sections are complete and what still needs attention.</p>
+                  </div>
+                </div>
+                <div class="status-row">
+                  <span id="completenessLabel" class="status-pill">0% Complete</span>
+                </div>
+                <div class="progress"><span id="completenessBar"></span></div>
+                <div id="missingSectionsList" class="missing-list" style="margin-top:14px;"></div>
+              </div>
+
+              <div class="panel">
+                <div class="card-title-row">
+                  <div>
+                    <h3>ATS Compatibility</h3>
+                    <p>Simulated scoring for structure, keywords, formatting, and completeness.</p>
+                  </div>
+                </div>
+                <div class="ats-grid" id="atsGrid"></div>
+              </div>
+
+              <div class="panel">
+                <div class="card-title-row">
+                  <div>
+                    <h3>AI Assistant</h3>
+                    <p>Prepare your workflow for AI improvements without changing the editor.</p>
+                  </div>
+                </div>
+                <div class="list-stack" id="aiActions"></div>
+              </div>
+
+              <div class="panel">
+                <div class="card-title-row">
+                  <div>
+                    <h3>Appearance</h3>
+                    <p>Customize the preview instantly.</p>
+                  </div>
+                </div>
+                <div class="settings-grid">
+                  <div class="field">
+                    <label for="fontSelect">Font</label>
+                    <select id="fontSelect">
+                      <option value="Inter, Arial, system-ui, sans-serif">Inter</option>
+                      <option value="Georgia, Times New Roman, serif">Georgia</option>
+                      <option value="'Trebuchet MS', Arial, sans-serif">Trebuchet</option>
+                      <option value="'Segoe UI', Arial, sans-serif">Segoe UI</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="accentSelect">Accent Color</label>
+                    <select id="accentSelect">
+                      <option value="#1663ff">Blue</option>
+                      <option value="#0f766e">Teal</option>
+                      <option value="#7c3aed">Purple</option>
+                      <option value="#dc2626">Red</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="spacingRange">Spacing</label>
+                    <input id="spacingRange" type="range" min="0.9" max="1.2" step="0.05" value="1">
+                  </div>
+                  <div class="field">
+                    <label for="zoomRange">Preview Zoom</label>
+                    <input id="zoomRange" type="range" min="0.8" max="1.1" step="0.05" value="1">
+                  </div>
+                  <div class="inline-actions">
+                    <button id="themeToggleBtn" class="secondary-btn tiny-btn" type="button">Toggle Light/Dark</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="analyzerView" class="workspace-card analyzer-section glass hidden">
+        <div class="card-title-row">
+          <div>
+            <h2>Resume Analyzer</h2>
+            <p>Upload a PDF or DOCX to simulate parsing and populate the editor with example content.</p>
+          </div>
+        </div>
+
+        <div class="analyzer-stack">
+          <div class="upload-dropzone">
+            <div class="upload-icon">↑</div>
+            <div>
+              <strong>Upload your resume</strong>
+              <p style="margin:8px 0 0; color:var(--muted);">Supports PDF and DOCX. Parsing is simulated for now.</p>
+            </div>
+            <input id="analyzerFileInput" type="file" accept=".pdf,.doc,.docx">
+          </div>
+
+          <div id="uploadProgressCard" class="upload-card hidden">
+            <strong>Analyzing upload</strong>
+            <div class="progress"><span id="uploadProgressBar"></span></div>
+            <div id="uploadProgressText" class="simple-list"></div>
+          </div>
+
+          <div id="uploadSuccessCard" class="upload-card hidden">
+            <strong>Upload complete</strong>
+            <p>Example resume information has been inserted into the current resume for review.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="coverletterView" class="workspace-card coverletter-section glass hidden">
+        <div class="card-title-row">
+          <div>
+            <h2>Cover Letter Builder</h2>
+            <p>Create matching cover letters with auto-save, live preview, and PDF export.</p>
+          </div>
+          <div class="inline-actions">
+            <span id="coverSaveIndicator" class="status-pill success">Saved ✓</span>
+            <button id="downloadCoverPdfBtn" class="primary-btn" type="button">Download PDF</button>
+          </div>
+        </div>
+
+        <div class="coverletter-layout">
+          <div class="panel">
+            <div class="field-stack">
+              <div class="field">
+                <label for="coverNameInput">Cover Letter Name</label>
+                <input id="coverNameInput" type="text" placeholder="Operations Cover Letter">
+              </div>
+              <div class="field">
+                <label for="coverTemplateSelect">Template</label>
+                <select id="coverTemplateSelect"></select>
+              </div>
+              <div class="field">
+                <label for="coverRecipientInput">Hiring Manager</label>
+                <input id="coverRecipientInput" type="text" placeholder="Hiring Manager">
+              </div>
+              <div class="field">
+                <label for="coverCompanyInput">Company</label>
+                <input id="coverCompanyInput" type="text" placeholder="Northshore Creative">
+              </div>
+              <div class="field">
+                <label for="coverJobInput">Role</label>
+                <input id="coverJobInput" type="text" placeholder="Operations Coordinator">
+              </div>
+              <div class="field">
+                <label for="coverIntroInput">Opening</label>
+                <textarea id="coverIntroInput" placeholder="I am writing to express my interest in the Operations Coordinator role at Northshore Creative."></textarea>
+              </div>
+              <div class="field">
+                <label for="coverBodyInput">Body</label>
+                <textarea id="coverBodyInput" placeholder="My experience coordinating workflows, supporting teams, and improving operations makes me a strong fit for this role."></textarea>
+              </div>
+              <div class="field">
+                <label for="coverClosingInput">Closing</label>
+                <textarea id="coverClosingInput" placeholder="Thank you for your time and consideration. I would welcome the opportunity to discuss my experience further."></textarea>
+              </div>
+              <div class="field">
+                <label for="coverSignatureInput">Signature</label>
+                <input id="coverSignatureInput" type="text" placeholder="Amelia Carter">
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="resume-stage">
+              <div class="resume-wrap">
+                <article id="coverPreview" class="cover-preview-sheet"></article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="settingsView" class="workspace-card glass hidden">
+        <div class="card-title-row">
+          <div>
+            <h2>Account Settings</h2>
+            <p>Manage your profile, notifications, theme, privacy, and account preferences from one place.</p>
+          </div>
+        </div>
+
+        <div class="workspace-grid" style="grid-template-columns:minmax(300px, 420px) minmax(0, 1fr);">
+          <aside class="panel">
+            <div class="field-stack">
+              <div class="field">
+                <label for="settingsPageDisplayName">Display Name</label>
+                <input id="settingsPageDisplayName" type="text" placeholder="Amelia Carter">
+              </div>
+              <div class="field">
+                <label for="settingsPageEmail">Email Address</label>
+                <input id="settingsPageEmail" type="email" placeholder="amelia.carter@email.com">
+              </div>
+              <div class="field">
+                <label for="settingsPagePassword">Change Password</label>
+                <input id="settingsPagePassword" type="password" placeholder="Simulated password update">
+              </div>
+              <div class="field">
+                <label for="settingsPageLanguage">Language</label>
+                <select id="settingsPageLanguage">
+                  <option value="English">English</option>
+                  <option value="French">French</option>
+                  <option value="Spanish">Spanish</option>
+                  <option value="German">German</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="settingsPageTheme">Theme Selection</label>
+                <select id="settingsPageTheme">
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="settingsPageAvatar">Profile Picture Upload</label>
+                <input id="settingsPageAvatar" type="file" accept="image/*">
+              </div>
+              <div class="inline-actions">
+                <button id="saveSettingsPageBtn" class="primary-btn" type="button">Save Changes</button>
+              </div>
+            </div>
+          </aside>
+
+          <section class="panel">
+            <div class="settings-grid">
+              <div class="toggle-row">
+                <div class="toggle-copy">
+                  <strong>Email notifications</strong>
+                  <span>Receive product updates, release notes, and account-related notices.</span>
+                </div>
+                <input id="settingsNotifyEmail" type="checkbox">
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-copy">
+                  <strong>Feature announcements</strong>
+                  <span>Get alerts when new builder features and templates are released.</span>
+                </div>
+                <input id="settingsNotifyFeatures" type="checkbox">
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-copy">
+                  <strong>Private account mode</strong>
+                  <span>Keep all resumes private on this device and disable future public-sharing defaults.</span>
+                </div>
+                <input id="settingsPrivateMode" type="checkbox">
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-copy">
+                  <strong>Analytics participation</strong>
+                  <span>Allow future analytics and engagement tracking tools when available.</span>
+                </div>
+                <input id="settingsAnalytics" type="checkbox">
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-copy">
+                  <strong>Public profile readiness</strong>
+                  <span>Prepare your account for public resume links and profile pages later.</span>
+                </div>
+                <input id="settingsPublicProfile" type="checkbox">
+              </div>
+              <div class="inline-actions">
+                <button id="deleteAccountPageBtn" class="ghost-btn" type="button">Delete Account</button>
+              </div>
+              <div id="settingsPageStatus" class="auth-status"></div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="helpView" class="workspace-card glass hidden">
+        <div class="card-title-row">
+          <div>
+            <h2>Help Center</h2>
+            <p>Find quick answers, submit feedback, and learn how to get the most from Resume Builder.</p>
+          </div>
+        </div>
+
+        <div class="workspace-grid" style="grid-template-columns:minmax(300px, 420px) minmax(0, 1fr);">
+          <aside class="panel">
+            <div class="field-stack">
+              <div class="support-card">
+                <strong>Getting Started</strong>
+                <p>1. Create a resume from the dashboard. 2. Pick a template. 3. Edit sections with live preview. 4. Export PDF when ready.</p>
+              </div>
+              <div class="support-card">
+                <strong>Keyboard Shortcuts</strong>
+                <div class="shortcut-grid">
+                  <div class="shortcut-item"><strong>Esc</strong><p>Close open dialogs and menus.</p></div>
+                  <div class="shortcut-item"><strong>Tab</strong><p>Move through form controls quickly.</p></div>
+                  <div class="shortcut-item"><strong>Enter</strong><p>Confirm focused buttons and form actions.</p></div>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <section class="panel">
+            <div class="faq-grid">
+              <div class="faq-item"><strong>How are my resumes saved?</strong><p>Everything is stored locally in your browser for now, including account settings and saved resumes.</p></div>
+              <div class="faq-item"><strong>Can I export as PDF?</strong><p>Yes. Resume and cover letter pages support one-click PDF export.</p></div>
+              <div class="faq-item"><strong>Can I use multiple templates?</strong><p>Yes. Switch templates anytime from the editor and gallery.</p></div>
+            </div>
+
+            <div class="field-stack" style="margin-top:18px;">
+              <div class="field">
+                <label for="helpContactMessage">Contact Support</label>
+                <textarea id="helpContactMessage" placeholder="Tell us what you need help with."></textarea>
+              </div>
+              <button id="helpContactBtn" class="secondary-btn" type="button">Send Support Request</button>
+
+              <div class="field">
+                <label for="helpBugMessage">Report a Bug</label>
+                <textarea id="helpBugMessage" placeholder="Describe the bug, the page, and what happened."></textarea>
+              </div>
+              <button id="helpBugBtn" class="secondary-btn" type="button">Report Bug</button>
+
+              <div class="field">
+                <label for="helpFeatureMessage">Suggest a Feature</label>
+                <textarea id="helpFeatureMessage" placeholder="Tell us what feature would improve your workflow."></textarea>
+              </div>
+              <button id="helpFeatureBtn" class="secondary-btn" type="button">Suggest Feature</button>
+
+              <div id="helpStatus" class="auth-status"></div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </section>
+
+    <section class="section future-section scroll-reveal">
+      <div class="section-header">
+        <div class="eyebrow">Coming Soon</div>
+        <h2>Future Pro features already mapped out</h2>
+        <p>These polished placeholders keep the product feeling complete today while leaving room for future growth.</p>
+      </div>
+
+      <div class="future-grid">
+        <article class="future-card">
+          <strong>AI Resume Assistant</strong>
+          <p>Generate stronger summaries, targeted bullets, and better keyword alignment.</p>
+        </article>
+        <article class="future-card">
+          <strong>Cover Letter Generator</strong>
+          <p>Create tailored cover letters from your resume and target role in one flow.</p>
+        </article>
+        <article class="future-card">
+          <strong>Resume Analyzer</strong>
+          <p>Parse uploaded resumes and provide deeper structural and keyword insights.</p>
+        </article>
+        <article class="future-card">
+          <strong>Cloud Sync</strong>
+          <p>Sync resumes, cover letters, and preferences across devices securely.</p>
+        </article>
+        <article class="future-card">
+          <strong>Team Collaboration</strong>
+          <p>Collaborate with coaches, recruiters, or teammates on draft improvements.</p>
+        </article>
+        <article class="future-card">
+          <strong>Resume Sharing</strong>
+          <p>Share polished review links and export packages with hiring managers.</p>
+        </article>
+        <article class="future-card">
+          <strong>Interview Preparation</strong>
+          <p>Generate practice questions and talking points based on your resume.</p>
+        </article>
+        <article class="future-card">
+          <strong>Job Tracker</strong>
+          <p>Track applications, statuses, deadlines, and follow-ups alongside each resume.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="pricing" class="section pricing scroll-reveal">
+      <div class="section-header">
+        <div class="eyebrow">Pricing</div>
+        <h2>Simple pricing for getting started</h2>
+        <p>Start free today and explore more advanced capabilities as additional features arrive.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <article class="pricing-card glass">
+          <span class="pricing-badge">Free</span>
+          <h3>Free</h3>
+          <p>Everything needed to build, preview, and export polished resumes.</p>
+          <div class="pricing-price">$0</div>
+          <div class="pricing-list">
+            <span>2 Templates</span>
+            <span>Live Preview</span>
+            <span>PDF Export</span>
+          </div>
+        </article>
+
+        <article class="pricing-card glass">
+          <span class="pricing-badge">Coming Soon</span>
+          <h3>Pro</h3>
+          <p>For users who want more automation, history, and premium content tools.</p>
+          <div class="pricing-price">$12<span style="font-size:1rem; color:var(--muted); letter-spacing:0;">/mo</span></div>
+          <div class="pricing-list">
+            <span>Unlimited Templates</span>
+            <span>AI Resume Assistant</span>
+            <span>Cover Letter Generator</span>
+            <span>Resume History</span>
+            <span>Cloud Sync</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <footer id="about" class="section footer scroll-reveal">
+      <div class="footer-card glass">
+        <div class="footer-cta">
+          <div>
+            <h3>Ready to turn your draft into a polished resume?</h3>
+            <p>Open the editor, choose a template, and export a clean PDF in a few minutes.</p>
+          </div>
+          <button id="footerCtaBtn" class="primary-btn" type="button">Open Resume Editor</button>
+        </div>
+
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="brand" style="margin-bottom:12px;">
+              <span class="brand-mark">R</span>
+              <span>Resume Builder</span>
+            </div>
+            <p>Create polished ATS-friendly resumes, matching cover letters, and export-ready documents from one fast workspace.</p>
+          </div>
+
+          <div class="footer-links">
+            <strong>Product</strong>
+            <a href="#features">Features</a>
+            <a href="#templates">Templates</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#workspace">Dashboard</a>
+          </div>
+
+          <div class="footer-links">
+            <strong>Company</strong>
+            <a href="#about">About</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Cookie Policy</a>
+          </div>
+
+          <div class="footer-links">
+            <strong>Support</strong>
+            <a href="#">Contact</a>
+            <a href="#workspace">Editor</a>
+            <a href="#workspace">Help Center</a>
+            <a href="#top">Back to Top</a>
+            <div class="social-row">
+              <span class="social-icon">in</span>
+              <span class="social-icon">X</span>
+              <span class="social-icon">IG</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <span class="footer-copy">Copyright © 2026 Resume Builder</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <div id="authModal" class="modal" aria-hidden="true">
+    <div class="auth-card glass">
+      <div class="auth-head">
+        <div>
+          <h3 id="authTitle">Create your account</h3>
+          <p id="authSubtitle">Save your resumes locally and return to your dashboard anytime.</p>
+        </div>
+        <button id="closeAuthBtn" class="icon-btn" type="button" aria-label="Close auth dialog">×</button>
+      </div>
+
+      <div id="signupView" class="auth-view active">
+        <form id="signupForm" class="auth-grid">
+          <div class="field">
+            <label for="signupName">Full Name</label>
+            <input id="signupName" name="signupName" type="text" placeholder="Amelia Carter" required>
+          </div>
+          <div class="field">
+            <label for="signupEmail">Email Address</label>
+            <input id="signupEmail" name="signupEmail" type="email" placeholder="amelia.carter@email.com" required>
+          </div>
+          <div class="field">
+            <label for="signupPassword">Password</label>
+            <input id="signupPassword" name="signupPassword" type="password" placeholder="Create a password" required>
+          </div>
+          <div class="field">
+            <label for="signupConfirmPassword">Confirm Password</label>
+            <input id="signupConfirmPassword" name="signupConfirmPassword" type="password" placeholder="Confirm your password" required>
+          </div>
+          <button class="primary-btn" type="submit">Create Free Account</button>
+        </form>
+        <div class="auth-switch">
+          Already have an account?
+          <button id="showLoginBtn" type="button">Sign In</button>
+        </div>
+      </div>
+
+      <div id="loginView" class="auth-view">
+        <form id="loginForm" class="auth-grid">
+          <div class="field">
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" name="loginEmail" type="email" placeholder="amelia.carter@email.com" required>
+          </div>
+          <div class="field">
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" name="loginPassword" type="password" placeholder="Enter your password" required>
+          </div>
+          <button class="primary-btn" type="submit">Sign In</button>
+        </form>
+        <div class="auth-switch">
+          Need an account?
+          <button id="showSignupBtn" type="button">Create one</button>
+        </div>
+      </div>
+
+      <div id="authStatus" class="auth-status"></div>
+    </div>
+  </div>
+
+  <div id="comingSoonModal" class="modal" aria-hidden="true">
+    <div class="coming-soon-card glass">
+      <div class="modal-head">
+        <div>
+          <h3 id="comingSoonTitle">Coming Soon</h3>
+          <p id="comingSoonText">This capability is designed and ready for future API integration.</p>
+        </div>
+        <button id="closeComingSoonBtn" class="icon-btn" type="button" aria-label="Close coming soon dialog">×</button>
+      </div>
+      <div class="simple-list">
+        <span>Polished workflow already mapped out</span>
+        <span>Designed for direct API integration later</span>
+        <span>Current editor state will remain compatible</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="accountSettingsModal" class="modal" aria-hidden="true">
+    <div class="auth-card glass">
+      <div class="modal-head">
+        <div>
+          <h3>Account Settings</h3>
+          <p>Manage your profile, privacy, and local preferences for Resume Builder.</p>
+        </div>
+        <button id="closeSettingsBtn" class="icon-btn" type="button" aria-label="Close account settings">×</button>
+      </div>
+
+      <div class="settings-tabs">
+        <button class="pill-btn active" type="button" data-settings-tab="account">Account</button>
+        <button class="pill-btn" type="button" data-settings-tab="privacy">Privacy</button>
+        <button class="pill-btn" type="button" data-settings-tab="preferences">Preferences</button>
+      </div>
+
+      <div id="settingsAccountPanel" class="settings-panel active">
+        <div class="field">
+          <label for="settingsNameInput">Full Name</label>
+          <input id="settingsNameInput" type="text" placeholder="Amelia Carter">
+        </div>
+        <div class="field">
+          <label for="settingsEmailInput">Email Address</label>
+          <input id="settingsEmailInput" type="email" readonly>
+        </div>
+        <div class="field">
+          <label for="settingsPasswordInput">New Password</label>
+          <input id="settingsPasswordInput" type="password" placeholder="Leave blank to keep current password">
+        </div>
+        <div class="inline-actions">
+          <button id="saveAccountSettingsBtn" class="primary-btn" type="button">Save Account</button>
+        </div>
+      </div>
+
+      <div id="settingsPrivacyPanel" class="settings-panel">
+        <div class="toggle-row">
+          <div class="toggle-copy">
+            <strong>Private profile mode</strong>
+            <span>Keep your resume data stored only on this device and hide public-sharing features.</span>
+          </div>
+          <input id="privacyPrivateModeInput" type="checkbox">
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-copy">
+            <strong>Resume analytics</strong>
+            <span>Allow future analytics and tracking features when resume sharing is available.</span>
+          </div>
+          <input id="privacyAnalyticsInput" type="checkbox">
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-copy">
+            <strong>Public profile readiness</strong>
+            <span>Prepare your account for future public resume links and hosted profile pages.</span>
+          </div>
+          <input id="privacyPublicProfileInput" type="checkbox">
+        </div>
+        <div class="inline-actions">
+          <button id="savePrivacySettingsBtn" class="primary-btn" type="button">Save Privacy</button>
+        </div>
+      </div>
+
+      <div id="settingsPreferencesPanel" class="settings-panel">
+        <div class="toggle-row">
+          <div class="toggle-copy">
+            <strong>Email product updates</strong>
+            <span>Receive release notes and future feature announcements.</span>
+          </div>
+          <input id="preferencesEmailUpdatesInput" type="checkbox">
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-copy">
+            <strong>Remember dashboard view</strong>
+            <span>Restore your last workspace tab when you come back.</span>
+          </div>
+          <input id="preferencesRememberViewInput" type="checkbox">
+        </div>
+        <div class="settings-note">
+          Your account currently uses local storage only. Cloud sync, public resume links, and advanced sharing controls will connect here later without changing your existing data structure.
+        </div>
+        <div class="inline-actions">
+          <button id="savePreferenceSettingsBtn" class="primary-btn" type="button">Save Preferences</button>
+          <button id="deleteAccountBtn" class="ghost-btn" type="button">Delete Account</button>
+        </div>
+      </div>
+
+      <div id="settingsStatus" class="auth-status"></div>
+    </div>
+  </div>
+
+  <div id="welcomeModal" class="modal" aria-hidden="true">
+    <div class="auth-card glass">
+      <div class="modal-head">
+        <div>
+          <h3>Welcome to Resume Builder</h3>
+          <p>What type of resume are you creating? We’ll generate a starter draft to help you move faster.</p>
+        </div>
+      </div>
+      <div class="onboarding-grid">
+        <button class="onboarding-option" type="button" data-onboarding-type="Student"><strong>Student</strong><span>For classes, extracurriculars, and campus experience.</span></button>
+        <button class="onboarding-option" type="button" data-onboarding-type="Internship"><strong>Internship</strong><span>Focused on skills, coursework, and early projects.</span></button>
+        <button class="onboarding-option" type="button" data-onboarding-type="Professional"><strong>Professional</strong><span>For established work experience and career growth.</span></button>
+        <button class="onboarding-option" type="button" data-onboarding-type="Career Change"><strong>Career Change</strong><span>Highlight transferable skills and relevant achievements.</span></button>
+        <button class="onboarding-option" type="button" data-onboarding-type="Executive"><strong>Executive</strong><span>Leadership-focused summary, scale, and strategic impact.</span></button>
+        <button class="onboarding-option" type="button" data-onboarding-type="Freelancer"><strong>Freelancer</strong><span>Showcase clients, projects, and versatile delivery.</span></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    const STORAGE_KEY = "resume_builder_saas_v2";
+
+    const TEMPLATE_OPTIONS = [
+      { id: "modern", label: "Modern", tone: "Balanced" },
+      { id: "classic", label: "Classic", tone: "Traditional" },
+      { id: "executive", label: "Executive", tone: "Refined" },
+      { id: "minimal", label: "Minimal", tone: "Simple" },
+      { id: "creative", label: "Creative", tone: "Expressive" },
+      { id: "professional", label: "Professional", tone: "Corporate" }
+    ];
+
+    const DYNAMIC_SECTIONS = [
+      { key: "experiences", label: "Work Experience", fields: [
+        { key: "title", label: "Role", type: "text", placeholder: "Operations Coordinator" },
+        { key: "company", label: "Company", type: "text", placeholder: "Northshore Creative" },
+        { key: "location", label: "Location", type: "text", placeholder: "Seattle, Washington" },
+        { key: "start", label: "Start Date", type: "text", placeholder: "2022" },
+        { key: "end", label: "End Date", type: "text", placeholder: "Present" },
+        { key: "description", label: "Description", type: "textarea", placeholder: "Coordinate project timelines, prepare client-ready reports, and improve internal workflows for a multi-disciplinary team." }
+      ]},
+      { key: "education", label: "Education", fields: [
+        { key: "degree", label: "Degree", type: "text", placeholder: "B.A. in Business Administration" },
+        { key: "school", label: "School", type: "text", placeholder: "University of Washington" },
+        { key: "location", label: "Location", type: "text", placeholder: "Seattle, Washington" },
+        { key: "start", label: "Start Date", type: "text", placeholder: "2018" },
+        { key: "end", label: "End Date", type: "text", placeholder: "2022" },
+        { key: "description", label: "Details", type: "textarea", placeholder: "Relevant coursework in business operations, communication, and organizational leadership." }
+      ]},
+      { key: "projects", label: "Projects", fields: [
+        { key: "name", label: "Project Name", type: "text", placeholder: "Workflow Optimization Initiative" },
+        { key: "role", label: "Role", type: "text", placeholder: "Project Lead" },
+        { key: "link", label: "Link", type: "text", placeholder: "project-url.com" },
+        { key: "description", label: "Description", type: "textarea", placeholder: "Redesigned reporting workflows and reduced preparation time across weekly operational reviews." }
+      ]},
+      { key: "certifications", label: "Certifications", fields: [
+        { key: "name", label: "Certification", type: "text", placeholder: "Certified Associate in Project Management" },
+        { key: "issuer", label: "Issuer", type: "text", placeholder: "PMI" },
+        { key: "date", label: "Date", type: "text", placeholder: "2024" },
+        { key: "description", label: "Details", type: "textarea", placeholder: "Credential focused on foundational project planning and execution." }
+      ]},
+      { key: "languages", label: "Languages", fields: [
+        { key: "name", label: "Language", type: "text", placeholder: "English" },
+        { key: "level", label: "Proficiency", type: "text", placeholder: "Native" }
+      ]},
+      { key: "interests", label: "Interests / Hobbies", fields: [
+        { key: "name", label: "Interest", type: "text", placeholder: "Volunteer mentoring" },
+        { key: "description", label: "Details", type: "textarea", placeholder: "Support first-generation students with career planning and resume reviews." }
+      ]},
+      { key: "references", label: "References", fields: [
+        { key: "name", label: "Reference Name", type: "text", placeholder: "Jordan Patel" },
+        { key: "relationship", label: "Relationship", type: "text", placeholder: "Direct Manager" },
+        { key: "contact", label: "Contact", type: "text", placeholder: "jordan.patel@company.com" }
+      ]},
+      { key: "awards", label: "Awards", fields: [
+        { key: "name", label: "Award", type: "text", placeholder: "Operations Excellence Award" },
+        { key: "issuer", label: "Issuer", type: "text", placeholder: "Northshore Creative" },
+        { key: "date", label: "Date", type: "text", placeholder: "2023" },
+        { key: "description", label: "Details", type: "textarea", placeholder: "Recognized for streamlining team scheduling and improving reporting accuracy." }
+      ]},
+      { key: "volunteer", label: "Volunteer Experience", fields: [
+        { key: "organization", label: "Organization", type: "text", placeholder: "Community Resource Center" },
+        { key: "role", label: "Role", type: "text", placeholder: "Volunteer Coordinator" },
+        { key: "date", label: "Dates", type: "text", placeholder: "2021 - Present" },
+        { key: "description", label: "Description", type: "textarea", placeholder: "Organize onboarding, scheduling, and communications for a rotating volunteer team." }
+      ]}
+    ];
+
+    const AI_ACTIONS = [
+      "Improve Summary",
+      "Rewrite Experience",
+      "ATS Optimization",
+      "Generate Skills",
+      "Generate Projects",
+      "Generate Cover Letter",
+      "Tailor Resume to Job Description"
+    ];
+
+    const DEFAULT_RESUME = () => ({
+      id: crypto.randomUUID(),
+      name: "Operations Resume",
+      favorite: false,
+      type: "Professional",
+      createdAt: new Date().toISOString(),
+      template: "modern",
+      updatedAt: new Date().toISOString(),
+      lastOpened: new Date().toISOString(),
+      appearance: {
+        font: "Inter, Arial, system-ui, sans-serif",
+        accent: "#1663ff",
+        spacing: 1,
+        zoom: 1,
+        darkMode: false
+      },
+      content: {
+        fullName: "Amelia Carter",
+        headline: "Operations Coordinator",
+        email: "amelia.carter@email.com",
+        phone: "(415) 555-0182",
+        location: "Seattle, Washington",
+        website: "linkedin.com/in/amelia-carter",
+        summary: "Operations and project professional with experience coordinating cross-functional teams, improving internal processes, and delivering high-quality client work on schedule.",
+        skills: "Project Coordination, Client Communication, Process Improvement, Excel, Scheduling",
+        experiences: [{
+          title: "Operations Coordinator",
+          company: "Northshore Creative",
+          location: "Seattle, Washington",
+          start: "2022",
+          end: "Present",
+          description: "Coordinate project timelines, prepare client-ready reports, and improve internal workflows for a multi-disciplinary team."
+        }],
+        education: [{
+          degree: "B.A. in Business Administration",
+          school: "University of Washington",
+          location: "Seattle, Washington",
+          start: "2018",
+          end: "2022",
+          description: "Relevant coursework in business operations, communication, and organizational leadership."
+        }],
+        projects: [],
+        certifications: [],
+        languages: [],
+        interests: [],
+        references: [],
+        awards: [],
+        volunteer: []
+      }
+    });
+
+    const DEFAULT_COVER = () => ({
+      id: crypto.randomUUID(),
+      name: "Operations Cover Letter",
+      createdAt: new Date().toISOString(),
+      template: "modern",
+      updatedAt: new Date().toISOString(),
+      recipient: "Hiring Manager",
+      company: "Northshore Creative",
+      jobTitle: "Operations Coordinator",
+      intro: "I am writing to express my interest in the Operations Coordinator role at Northshore Creative.",
+      body: "My experience coordinating workflows, supporting cross-functional teams, and improving internal systems makes me a strong fit for this opportunity. I bring a reliable, detail-oriented approach to project execution and stakeholder communication.",
+      closing: "Thank you for your time and consideration. I would welcome the opportunity to discuss how my experience can support your team.",
+      signature: "Amelia Carter"
+    });
+
+    const DEFAULT_STATE = {
+      currentUserEmail: null,
+      currentView: "dashboard",
+      currentResumeId: null,
+      currentCoverId: null,
+      resumeSearch: "",
+      resumeSort: "updated",
+      pendingOnboardingEmail: null,
+      users: {},
+      guest: {
+        resume: DEFAULT_RESUME(),
+        cover: DEFAULT_COVER()
+      }
+    };
+
+    const state = loadState();
+
+    const els = {
+      body: document.body,
+      heroGetStartedBtn: document.getElementById("heroGetStartedBtn"),
+      heroLoginBtn: document.getElementById("heroLoginBtn"),
+      navGetStartedBtn: document.getElementById("navGetStartedBtn"),
+      navLoginBtn: document.getElementById("navLoginBtn"),
+      mobileGetStartedBtn: document.getElementById("mobileGetStartedBtn"),
+      mobileLoginBtn: document.getElementById("mobileLoginBtn"),
+      footerCtaBtn: document.getElementById("footerCtaBtn"),
+      jumpPreviewBtn: document.getElementById("jumpPreviewBtn"),
+      profileChip: document.getElementById("profileChip"),
+      profileName: document.getElementById("profileName"),
+      profileAvatar: document.getElementById("profileAvatar"),
+      profileMenuName: document.getElementById("profileMenuName"),
+      profileMenuEmail: document.getElementById("profileMenuEmail"),
+      profileMenuAvatar: document.getElementById("profileMenuAvatar"),
+      profileMenuMeta: document.getElementById("profileMenuMeta"),
+      profileMenu: document.getElementById("profileMenu"),
+      profileMenuBtn: document.getElementById("profileMenuBtn"),
+      profileSignOutBtn: document.getElementById("profileSignOutBtn"),
+      hamburgerBtn: document.getElementById("hamburgerBtn"),
+      mobileNav: document.getElementById("mobileNav"),
+      authModal: document.getElementById("authModal"),
+      closeAuthBtn: document.getElementById("closeAuthBtn"),
+      signupView: document.getElementById("signupView"),
+      loginView: document.getElementById("loginView"),
+      authTitle: document.getElementById("authTitle"),
+      authSubtitle: document.getElementById("authSubtitle"),
+      authStatus: document.getElementById("authStatus"),
+      signupForm: document.getElementById("signupForm"),
+      loginForm: document.getElementById("loginForm"),
+      showLoginBtn: document.getElementById("showLoginBtn"),
+      showSignupBtn: document.getElementById("showSignupBtn"),
+      workspaceTabs: document.querySelectorAll("[data-view]"),
+      dashboardView: document.getElementById("dashboardView"),
+      editorView: document.getElementById("editorView"),
+      analyzerView: document.getElementById("analyzerView"),
+      coverletterView: document.getElementById("coverletterView"),
+      settingsView: document.getElementById("settingsView"),
+      helpView: document.getElementById("helpView"),
+      dashboardWelcomeTitle: document.getElementById("dashboardWelcomeTitle"),
+      dashboardWelcomeText: document.getElementById("dashboardWelcomeText"),
+      createResumeBtn: document.getElementById("createResumeBtn"),
+      resumeSearchInput: document.getElementById("resumeSearchInput"),
+      resumeSortSelect: document.getElementById("resumeSortSelect"),
+      dashboardStats: document.getElementById("dashboardStats"),
+      dashboardGrid: document.getElementById("dashboardGrid"),
+      resumeNameInput: document.getElementById("resumeNameInput"),
+      resumeTemplateSelect: document.getElementById("resumeTemplateSelect"),
+      fullNameInput: document.getElementById("fullNameInput"),
+      headlineInput: document.getElementById("headlineInput"),
+      emailInput: document.getElementById("emailInput"),
+      phoneInput: document.getElementById("phoneInput"),
+      locationInput: document.getElementById("locationInput"),
+      websiteInput: document.getElementById("websiteInput"),
+      summaryInput: document.getElementById("summaryInput"),
+      skillsInput: document.getElementById("skillsInput"),
+      dynamicSections: document.getElementById("dynamicSections"),
+      currentResumeNameBadge: document.getElementById("currentResumeNameBadge"),
+      favoriteResumeBtn: document.getElementById("favoriteResumeBtn"),
+      workspaceSettingsBtn: document.getElementById("workspaceSettingsBtn"),
+      saveIndicator: document.getElementById("saveIndicator"),
+      clearResumeBtn: document.getElementById("clearResumeBtn"),
+      resumePreview: document.getElementById("resumePreview"),
+      downloadResumePdfBtn: document.getElementById("downloadResumePdfBtn"),
+      completenessLabel: document.getElementById("completenessLabel"),
+      completenessBar: document.getElementById("completenessBar"),
+      missingSectionsList: document.getElementById("missingSectionsList"),
+      atsGrid: document.getElementById("atsGrid"),
+      aiActions: document.getElementById("aiActions"),
+      fontSelect: document.getElementById("fontSelect"),
+      accentSelect: document.getElementById("accentSelect"),
+      spacingRange: document.getElementById("spacingRange"),
+      zoomRange: document.getElementById("zoomRange"),
+      themeToggleBtn: document.getElementById("themeToggleBtn"),
+      analyzerFileInput: document.getElementById("analyzerFileInput"),
+      uploadProgressCard: document.getElementById("uploadProgressCard"),
+      uploadProgressBar: document.getElementById("uploadProgressBar"),
+      uploadProgressText: document.getElementById("uploadProgressText"),
+      uploadSuccessCard: document.getElementById("uploadSuccessCard"),
+      coverNameInput: document.getElementById("coverNameInput"),
+      coverTemplateSelect: document.getElementById("coverTemplateSelect"),
+      coverRecipientInput: document.getElementById("coverRecipientInput"),
+      coverCompanyInput: document.getElementById("coverCompanyInput"),
+      coverJobInput: document.getElementById("coverJobInput"),
+      coverIntroInput: document.getElementById("coverIntroInput"),
+      coverBodyInput: document.getElementById("coverBodyInput"),
+      coverClosingInput: document.getElementById("coverClosingInput"),
+      coverSignatureInput: document.getElementById("coverSignatureInput"),
+      coverPreview: document.getElementById("coverPreview"),
+      coverSaveIndicator: document.getElementById("coverSaveIndicator"),
+      downloadCoverPdfBtn: document.getElementById("downloadCoverPdfBtn"),
+      templateGallery: document.getElementById("templateGallery"),
+      comingSoonModal: document.getElementById("comingSoonModal"),
+      closeComingSoonBtn: document.getElementById("closeComingSoonBtn"),
+      comingSoonTitle: document.getElementById("comingSoonTitle"),
+      comingSoonText: document.getElementById("comingSoonText"),
+      accountSettingsModal: document.getElementById("accountSettingsModal"),
+      closeSettingsBtn: document.getElementById("closeSettingsBtn"),
+      settingsTabs: document.querySelectorAll("[data-settings-tab]"),
+      settingsAccountPanel: document.getElementById("settingsAccountPanel"),
+      settingsPrivacyPanel: document.getElementById("settingsPrivacyPanel"),
+      settingsPreferencesPanel: document.getElementById("settingsPreferencesPanel"),
+      settingsNameInput: document.getElementById("settingsNameInput"),
+      settingsEmailInput: document.getElementById("settingsEmailInput"),
+      settingsPasswordInput: document.getElementById("settingsPasswordInput"),
+      privacyPrivateModeInput: document.getElementById("privacyPrivateModeInput"),
+      privacyAnalyticsInput: document.getElementById("privacyAnalyticsInput"),
+      privacyPublicProfileInput: document.getElementById("privacyPublicProfileInput"),
+      preferencesEmailUpdatesInput: document.getElementById("preferencesEmailUpdatesInput"),
+      preferencesRememberViewInput: document.getElementById("preferencesRememberViewInput"),
+      saveAccountSettingsBtn: document.getElementById("saveAccountSettingsBtn"),
+      savePrivacySettingsBtn: document.getElementById("savePrivacySettingsBtn"),
+      savePreferenceSettingsBtn: document.getElementById("savePreferenceSettingsBtn"),
+      deleteAccountBtn: document.getElementById("deleteAccountBtn"),
+      settingsStatus: document.getElementById("settingsStatus"),
+      settingsPageDisplayName: document.getElementById("settingsPageDisplayName"),
+      settingsPageEmail: document.getElementById("settingsPageEmail"),
+      settingsPagePassword: document.getElementById("settingsPagePassword"),
+      settingsPageLanguage: document.getElementById("settingsPageLanguage"),
+      settingsPageTheme: document.getElementById("settingsPageTheme"),
+      settingsPageAvatar: document.getElementById("settingsPageAvatar"),
+      settingsNotifyEmail: document.getElementById("settingsNotifyEmail"),
+      settingsNotifyFeatures: document.getElementById("settingsNotifyFeatures"),
+      settingsPrivateMode: document.getElementById("settingsPrivateMode"),
+      settingsAnalytics: document.getElementById("settingsAnalytics"),
+      settingsPublicProfile: document.getElementById("settingsPublicProfile"),
+      saveSettingsPageBtn: document.getElementById("saveSettingsPageBtn"),
+      deleteAccountPageBtn: document.getElementById("deleteAccountPageBtn"),
+      settingsPageStatus: document.getElementById("settingsPageStatus"),
+      helpContactMessage: document.getElementById("helpContactMessage"),
+      helpBugMessage: document.getElementById("helpBugMessage"),
+      helpFeatureMessage: document.getElementById("helpFeatureMessage"),
+      helpContactBtn: document.getElementById("helpContactBtn"),
+      helpBugBtn: document.getElementById("helpBugBtn"),
+      helpFeatureBtn: document.getElementById("helpFeatureBtn"),
+      helpStatus: document.getElementById("helpStatus"),
+      welcomeModal: document.getElementById("welcomeModal"),
+      onboardingOptions: document.querySelectorAll("[data-onboarding-type]"),
+      toastStack: document.getElementById("toastStack"),
+      scrollRevealItems: document.querySelectorAll(".scroll-reveal"),
+      navLinks: document.querySelectorAll(".nav-link")
+    };
+
+    const saveTimers = new WeakMap();
+
+    function cloneData(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          const fresh = cloneData(DEFAULT_STATE);
+          fresh.currentResumeId = fresh.guest.resume.id;
+          fresh.currentCoverId = fresh.guest.cover.id;
+          return fresh;
+        }
+        const parsed = JSON.parse(raw);
+        return {
+          ...cloneData(DEFAULT_STATE),
+          ...parsed
+        };
+      } catch (error) {
+        const fresh = cloneData(DEFAULT_STATE);
+        fresh.currentResumeId = fresh.guest.resume.id;
+        fresh.currentCoverId = fresh.guest.cover.id;
+        return fresh;
+      }
+    }
+
+    function persistState(target = "both") {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      if (target === "resume" || target === "both") {
+        signalSaved(els.saveIndicator);
+      }
+      if (target === "cover" || target === "both") {
+        signalSaved(els.coverSaveIndicator);
+      }
+    }
+
+    function signalSaved(element) {
+      element.textContent = "Saved ✓";
+      element.classList.add("success");
+      clearTimeout(saveTimers.get(element));
+      const timer = setTimeout(() => {
+        element.textContent = "Saved ✓";
+      }, 400);
+      saveTimers.set(element, timer);
+    }
+
+    function notify(title, message = "") {
+      if (!els.toastStack) return;
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.innerHTML = `<strong>${escapeHtml(title)}</strong>${message ? `<span>${escapeHtml(message)}</span>` : ""}`;
+      els.toastStack.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(10px)";
+        setTimeout(() => toast.remove(), 220);
+      }, 2600);
+    }
+
+    function currentUser() {
+      if (!state.currentUserEmail) {
+        return null;
+      }
+      const user = state.users[state.currentUserEmail] || null;
+      if (user) ensureProfileDefaults(user);
+      return user;
+    }
+
+    function defaultProfile(name = "Guest", email = "", password = "") {
+      return {
+        name,
+        email,
+        password,
+        privacy: {
+          privateMode: true,
+          analytics: false,
+          publicProfileReady: false
+        },
+        preferences: {
+          emailUpdates: false,
+          rememberView: true
+        }
+      };
+    }
+
+    function ensureProfileDefaults(user) {
+      const base = defaultProfile(user?.profile?.name, user?.profile?.email, user?.profile?.password);
+      user.profile = {
+        ...base,
+        ...user.profile,
+        privacy: {
+          ...base.privacy,
+          ...(user.profile?.privacy || {})
+        },
+        preferences: {
+          ...base.preferences,
+          ...(user.profile?.preferences || {})
+        }
+      };
+      if (!user.profile.language) user.profile.language = "English";
+      if (!user.profile.avatar) user.profile.avatar = "";
+      if (!user.profile.notifications) {
+        user.profile.notifications = {
+          email: false,
+          features: false
+        };
+      }
+      if (typeof user.profile.onboardingCompleted !== "boolean") {
+        user.profile.onboardingCompleted = true;
+      }
+      return user;
+    }
+
+    function ensureResumeDefaults(resume) {
+      if (!resume.createdAt) resume.createdAt = resume.updatedAt || new Date().toISOString();
+      if (!resume.type) resume.type = "Professional";
+      if (!resume.lastOpened) resume.lastOpened = resume.updatedAt || new Date().toISOString();
+      if (!resume.appearance) {
+        resume.appearance = DEFAULT_RESUME().appearance;
+      }
+      return resume;
+    }
+
+    function ensureCoverDefaults(cover) {
+      if (!cover.createdAt) cover.createdAt = cover.updatedAt || new Date().toISOString();
+      return cover;
+    }
+
+    function currentResumeCollection() {
+      const user = currentUser();
+      if (!user) {
+        return [ensureResumeDefaults(state.guest.resume)];
+      }
+      return user.resumes.map(ensureResumeDefaults);
+    }
+
+    function currentCoverCollection() {
+      const user = currentUser();
+      if (!user) {
+        return [ensureCoverDefaults(state.guest.cover)];
+      }
+      return user.coverLetters.map(ensureCoverDefaults);
+    }
+
+    function activeResume() {
+      const collection = currentResumeCollection();
+      const found = collection.find((item) => item.id === state.currentResumeId);
+      if (found) return found;
+      state.currentResumeId = collection[0].id;
+      return collection[0];
+    }
+
+    function activeCover() {
+      const collection = currentCoverCollection();
+      const found = collection.find((item) => item.id === state.currentCoverId);
+      if (found) return found;
+      state.currentCoverId = collection[0].id;
+      return collection[0];
+    }
+
+    function ensureUserWorkspace(email, name, password) {
+      if (!state.users[email]) {
+        state.users[email] = {
+          profile: defaultProfile(name, email, password),
+          resumes: [DEFAULT_RESUME()],
+          coverLetters: [DEFAULT_COVER()]
+        };
+      }
+      ensureProfileDefaults(state.users[email]);
+      if (!state.users[email].resumes.length) {
+        state.users[email].resumes = [DEFAULT_RESUME()];
+      }
+      if (!state.users[email].coverLetters.length) {
+        state.users[email].coverLetters = [DEFAULT_COVER()];
+      }
+      state.users[email].resumes = state.users[email].resumes.map(ensureResumeDefaults);
+      state.users[email].coverLetters = state.users[email].coverLetters.map(ensureCoverDefaults);
+    }
+
+    function setAuthMode(mode) {
+      const isSignup = mode === "signup";
+      els.signupView.classList.toggle("active", isSignup);
+      els.loginView.classList.toggle("active", !isSignup);
+      els.authTitle.textContent = isSignup ? "Create your account" : "Welcome back";
+      els.authSubtitle.textContent = isSignup
+        ? "Save your resumes locally and return to your dashboard anytime."
+        : "Sign in to restore your saved resumes and continue editing.";
+      els.authStatus.textContent = "";
+    }
+
+    function openAuthModal(mode = "signup") {
+      setAuthMode(mode);
+      els.authModal.classList.add("open");
+      els.authModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeAuthModal() {
+      els.authModal.classList.remove("open");
+      els.authModal.setAttribute("aria-hidden", "true");
+      els.authStatus.textContent = "";
+    }
+
+    function openComingSoon(title, text) {
+      els.comingSoonTitle.textContent = title;
+      els.comingSoonText.textContent = text;
+      els.comingSoonModal.classList.add("open");
+      els.comingSoonModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeComingSoon() {
+      els.comingSoonModal.classList.remove("open");
+      els.comingSoonModal.setAttribute("aria-hidden", "true");
+    }
+
+    function openWelcomeModal() {
+      els.welcomeModal.classList.add("open");
+      els.welcomeModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeWelcomeModal() {
+      els.welcomeModal.classList.remove("open");
+      els.welcomeModal.setAttribute("aria-hidden", "true");
+    }
+
+    function setSettingsTab(tab) {
+      els.settingsTabs.forEach((button) => {
+        button.classList.toggle("active", button.dataset.settingsTab === tab);
+      });
+      els.settingsAccountPanel.classList.toggle("active", tab === "account");
+      els.settingsPrivacyPanel.classList.toggle("active", tab === "privacy");
+      els.settingsPreferencesPanel.classList.toggle("active", tab === "preferences");
+      els.settingsStatus.textContent = "";
+    }
+
+    function populateSettingsModal() {
+      const user = currentUser();
+      if (!user) return;
+      els.settingsNameInput.value = user.profile.name || "";
+      els.settingsEmailInput.value = user.profile.email || "";
+      els.settingsPasswordInput.value = "";
+      els.privacyPrivateModeInput.checked = Boolean(user.profile.privacy.privateMode);
+      els.privacyAnalyticsInput.checked = Boolean(user.profile.privacy.analytics);
+      els.privacyPublicProfileInput.checked = Boolean(user.profile.privacy.publicProfileReady);
+      els.preferencesEmailUpdatesInput.checked = Boolean(user.profile.preferences.emailUpdates);
+      els.preferencesRememberViewInput.checked = Boolean(user.profile.preferences.rememberView);
+      els.settingsStatus.textContent = "";
+    }
+
+    function openAccountSettings(tab = "account") {
+      if (!currentUser()) {
+        openAuthModal("login");
+        return;
+      }
+      populateSettingsModal();
+      setSettingsTab(tab);
+      els.accountSettingsModal.classList.add("open");
+      els.accountSettingsModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeAccountSettings() {
+      els.accountSettingsModal.classList.remove("open");
+      els.accountSettingsModal.setAttribute("aria-hidden", "true");
+      els.settingsStatus.textContent = "";
+    }
+
+    function getInitials(name) {
+      return (name || "RB")
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0].toUpperCase())
+        .join("");
+    }
+
+    function applyAvatar(element, label, avatarData = "") {
+      if (!element) return;
+      element.style.backgroundImage = avatarData ? `url(${avatarData})` : "";
+      element.style.backgroundSize = avatarData ? "cover" : "";
+      element.style.backgroundPosition = avatarData ? "center" : "";
+      element.textContent = avatarData ? "" : label;
+    }
+
+    function updateProfileUi() {
+      const user = currentUser();
+      const signedIn = Boolean(user);
+      els.profileChip.classList.toggle("active", signedIn);
+      if (signedIn) {
+        const resumeCount = currentResumeCollection().length;
+        els.profileName.textContent = user.profile.name;
+        applyAvatar(els.profileAvatar, getInitials(user.profile.name), user.profile.avatar);
+        els.profileMenuName.textContent = user.profile.name;
+        els.profileMenuEmail.textContent = user.profile.email || "";
+        applyAvatar(els.profileMenuAvatar, getInitials(user.profile.name), user.profile.avatar);
+        els.profileMenuMeta.innerHTML = `
+          <span>${resumeCount} ${resumeCount === 1 ? "resume" : "resumes"}</span>
+          <span>Local account</span>
+        `;
+        els.workspaceSettingsBtn.classList.remove("hidden");
+        els.heroLoginBtn.classList.add("hidden");
+        els.heroGetStartedBtn.classList.add("hidden");
+        els.navLoginBtn.classList.add("hidden");
+        els.navGetStartedBtn.classList.add("hidden");
+        els.mobileLoginBtn.classList.add("hidden");
+        els.mobileGetStartedBtn.classList.add("hidden");
+      } else {
+        els.profileMenuName.textContent = "Guest";
+        els.profileMenuEmail.textContent = "Sign in to save your work";
+        applyAvatar(els.profileAvatar, "G", "");
+        applyAvatar(els.profileMenuAvatar, "G", "");
+        els.profileMenuMeta.innerHTML = "<span>Local workspace</span>";
+        els.workspaceSettingsBtn.classList.add("hidden");
+        els.heroLoginBtn.classList.remove("hidden");
+        els.heroGetStartedBtn.classList.remove("hidden");
+        els.navLoginBtn.classList.remove("hidden");
+        els.navGetStartedBtn.classList.remove("hidden");
+        els.mobileLoginBtn.classList.remove("hidden");
+        els.mobileGetStartedBtn.classList.remove("hidden");
+      }
+    }
+
+    function updateNavActive() {
+      const sections = ["features", "templates", "pricing", "about"];
+      let activeId = "features";
+      sections.forEach((id) => {
+        const section = document.getElementById(id);
+        if (!section) return;
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= 160 && rect.bottom >= 120) {
+          activeId = id;
+        }
+      });
+      els.navLinks.forEach((link) => {
+        const href = link.getAttribute("href") || "";
+        link.classList.toggle("active", href === `#${activeId}`);
+      });
+    }
+
+    function setView(view) {
+      state.currentView = view;
+      els.workspaceTabs.forEach((tab) => {
+        tab.classList.toggle("active", tab.dataset.view === view);
+      });
+      els.dashboardView.classList.toggle("hidden", view !== "dashboard");
+      els.editorView.classList.toggle("hidden", view !== "editor");
+      els.analyzerView.classList.toggle("hidden", view !== "analyzer");
+      els.coverletterView.classList.toggle("hidden", view !== "coverletter");
+      els.settingsView.classList.toggle("hidden", view !== "settings");
+      els.helpView.classList.toggle("hidden", view !== "help");
+      persistState(false);
+    }
+
+    function buildTemplateGallery() {
+      els.templateGallery.innerHTML = TEMPLATE_OPTIONS.map((template) => {
+        const sidebarClass = ["modern", "executive", "minimal", "creative", "professional"].includes(template.id)
+          ? `<div class="template-sidebar ${template.id === "executive" ? "executive" : template.id === "minimal" ? "minimal" : template.id === "creative" ? "creative" : ""}"></div>`
+          : "";
+        const withSidebar = template.id === "classic" ? "" : "with-sidebar";
+        return `
+          <article class="gallery-card glass ${template.id === activeResume().template ? "active" : ""}" data-template-card="${template.id}">
+            <div class="template-preview ${template.id}">
+              ${sidebarClass}
+              <div class="template-mini-header" style="${template.id === "classic" ? "" : "margin-left:38%;"}"></div>
+              <div class="template-lines ${withSidebar}">
+                <div class="line long"></div>
+                <div class="line medium"></div>
+                <div class="line short"></div>
+                <div class="line long"></div>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; margin-top:14px;">
+              <strong>${template.label}</strong>
+              <span style="color:var(--muted); font-size:0.84rem; font-weight:700;">${template.tone}</span>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function populateTemplateSelects() {
+      const options = TEMPLATE_OPTIONS.map((template) => `<option value="${template.id}">${template.label}</option>`).join("");
+      els.resumeTemplateSelect.innerHTML = options;
+      els.coverTemplateSelect.innerHTML = options;
+    }
+
+    function renderDashboard() {
+      const user = currentUser();
+      const collection = currentResumeCollection();
+      const search = state.resumeSearch.trim().toLowerCase();
+      let items = [...collection];
+
+      if (search) {
+        items = items.filter((resume) => resume.name.toLowerCase().includes(search) || resume.content.fullName.toLowerCase().includes(search));
+      }
+
+      if (state.resumeSort === "name") {
+        items.sort((a, b) => a.name.localeCompare(b.name));
+      } else if (state.resumeSort === "created") {
+        items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      } else if (state.resumeSort === "favorite") {
+        items.sort((a, b) => Number(b.favorite) - Number(a.favorite) || new Date(b.updatedAt) - new Date(a.updatedAt));
+      } else {
+        items.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      }
+
+      const favorites = collection.filter((resume) => resume.favorite).length;
+      const recent = [...collection].sort((a, b) => new Date(b.lastOpened) - new Date(a.lastOpened)).slice(0, 3).length;
+      const latest = [...collection].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
+
+      els.dashboardStats.innerHTML = `
+        <div class="stat-card"><strong>${collection.length}</strong><span>Total Resumes</span></div>
+        <div class="stat-card"><strong>${favorites}</strong><span>Favorites</span></div>
+        <div class="stat-card"><strong>${recent}</strong><span>Recently Opened</span></div>
+      `;
+
+      if (!user) {
+        els.dashboardWelcomeTitle.textContent = "Resume Dashboard";
+        els.dashboardWelcomeText.textContent = "Create, organize, favorite, search, and reopen resumes from one place.";
+        els.dashboardGrid.innerHTML = `
+          <div class="empty-state" style="grid-column:1 / -1;">
+            Sign in to unlock a persistent resume dashboard with saved resumes, favorites, and cover letters.
+          </div>
+        `;
+        return;
+      }
+
+      els.dashboardWelcomeTitle.textContent = `Welcome back, ${user.profile.name}`;
+      els.dashboardWelcomeText.textContent = latest
+        ? `You have ${collection.length} saved ${collection.length === 1 ? "resume" : "resumes"}. Last updated: ${latest.name}.`
+        : "Create your first resume to get started.";
+
+      if (!items.length) {
+        els.dashboardGrid.innerHTML = `
+          <div class="empty-state" style="grid-column:1 / -1;">
+            No resumes match your search. Create a new resume or clear the search field.
+          </div>
+        `;
+        return;
+      }
+
+      els.dashboardGrid.innerHTML = items.map((resume) => `
+        <article class="dashboard-card glass" data-resume-card="${resume.id}">
+          <div class="card-title-row">
+            <div>
+              <h3>${escapeHtml(resume.name)}</h3>
+              <p>${escapeHtml(resume.content.fullName || "Untitled Resume")}</p>
+            </div>
+            <button class="icon-btn" data-action="favorite" data-id="${resume.id}" aria-label="Favorite resume">
+              <span class="favorite-star ${resume.favorite ? "" : "off"}">★</span>
+            </button>
+          </div>
+          <div class="card-meta">
+            <span>${resume.template}</span>
+            <span>${resume.type || "Professional"}</span>
+            <span>Created ${formatDate(resume.createdAt)}</span>
+            <span>Updated ${formatDate(resume.updatedAt)}</span>
+          </div>
+          <div class="resume-meta-preview">
+            <div class="line long"></div>
+            <div class="line medium"></div>
+            <div class="line short"></div>
+          </div>
+          <div class="dashboard-actions" style="margin-top:16px;">
+            <button class="tiny-btn" data-action="open" data-id="${resume.id}">Open</button>
+            <button class="tiny-btn" data-action="duplicate" data-id="${resume.id}">Duplicate</button>
+            <button class="tiny-btn" data-action="rename" data-id="${resume.id}">Rename</button>
+            <button class="tiny-btn" data-action="delete" data-id="${resume.id}">Delete</button>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderDynamicSections() {
+      const resume = activeResume();
+      els.dynamicSections.innerHTML = DYNAMIC_SECTIONS.map((section) => {
+        const entries = resume.content[section.key];
+        return `
+          <section class="section-block">
+            <div class="section-block-header">
+              <h4>${section.label}</h4>
+              <button class="tiny-btn" type="button" data-section-add="${section.key}">Add</button>
+            </div>
+            ${entries.length ? entries.map((entry, index) => renderEntry(section, entry, index)).join("") : `
+              <div class="empty-state">No ${section.label.toLowerCase()} entries yet. Use Add to create one.</div>
+            `}
+          </section>
+        `;
+      }).join("");
+    }
+
+    function renderEntry(section, entry, index) {
+      const fields = section.fields.map((field) => {
+        const value = entry[field.key] || "";
+        if (field.type === "textarea") {
+          return `
+            <div class="field" style="grid-column:1 / -1;">
+              <label>${field.label}</label>
+              <textarea data-entry-input="${section.key}" data-index="${index}" data-field="${field.key}" placeholder="${field.placeholder}">${escapeHtml(value)}</textarea>
+            </div>
+          `;
+        }
+        return `
+          <div class="field">
+            <label>${field.label}</label>
+            <input data-entry-input="${section.key}" data-index="${index}" data-field="${field.key}" type="${field.type}" value="${escapeHtml(value)}" placeholder="${field.placeholder}">
+          </div>
+        `;
+      }).join("");
+
+      return `
+        <article class="editor-entry">
+          <div class="editor-entry-header">
+            <strong>${section.label} ${index + 1}</strong>
+            <div class="entry-actions">
+              <button class="tiny-btn" type="button" data-entry-move="${section.key}" data-index="${index}" data-dir="-1">↑</button>
+              <button class="tiny-btn" type="button" data-entry-move="${section.key}" data-index="${index}" data-dir="1">↓</button>
+              <button class="tiny-btn" type="button" data-entry-delete="${section.key}" data-index="${index}">Delete</button>
+            </div>
+          </div>
+          <div class="editor-entry-grid">
+            ${fields}
+          </div>
+        </article>
+      `;
+    }
+
+    function bindResumeFields() {
+      const resume = activeResume();
+      els.resumeNameInput.value = resume.name;
+      els.resumeTemplateSelect.value = resume.template;
+      els.fullNameInput.value = resume.content.fullName;
+      els.headlineInput.value = resume.content.headline || "";
+      els.emailInput.value = resume.content.email;
+      els.phoneInput.value = resume.content.phone;
+      els.locationInput.value = resume.content.location || "";
+      els.websiteInput.value = resume.content.website || "";
+      els.summaryInput.value = resume.content.summary;
+      els.skillsInput.value = resume.content.skills;
+      renderResumeEditorMeta();
+    }
+
+    function renderResumeEditorMeta() {
+      const resume = activeResume();
+      els.currentResumeNameBadge.textContent = resume.name;
+      els.favoriteResumeBtn.textContent = resume.favorite ? "★ Favorited" : "☆ Favorite";
+      els.favoriteResumeBtn.classList.toggle("active", resume.favorite);
+    }
+
+    function applyAppearance() {
+      const appearance = activeResume().appearance;
+      document.documentElement.style.setProperty("--font-resume", appearance.font);
+      document.documentElement.style.setProperty("--template-accent", appearance.accent);
+      document.documentElement.style.setProperty("--preview-scale", appearance.zoom);
+      document.documentElement.style.setProperty("--preview-spacing", appearance.spacing);
+      els.body.classList.toggle("dark", appearance.darkMode);
+      els.fontSelect.value = appearance.font;
+      els.accentSelect.value = appearance.accent;
+      els.spacingRange.value = appearance.spacing;
+      els.zoomRange.value = appearance.zoom;
+    }
+
+    function renderResumePreview() {
+      const resume = activeResume();
+      const content = resume.content;
+      const skills = splitCommaList(content.skills);
+
+      const sectionsHtml = [
+        renderContentSection("Professional Summary", `<p class="summary-text">${escapeHtml(content.summary || "Professional summary")}</p>`),
+        renderMultiSection("Work Experience", content.experiences, (entry) => `
+          <div class="content-card">
+            <p class="entry-text"><strong>${escapeHtml(entry.title || "Role")}</strong>
+${escapeHtml(entry.company || "Company")} | ${escapeHtml(joinRange(entry.start, entry.end))}
+${escapeHtml(entry.location || "")}
+${escapeHtml(entry.description || "")}</p>
+          </div>
+        `),
+        renderMultiSection("Projects", content.projects, (entry) => `
+          <div class="content-card">
+            <p class="entry-text"><strong>${escapeHtml(entry.name || "Project")}</strong>
+${escapeHtml(entry.role || "")}${entry.link ? "\n" + escapeHtml(entry.link) : ""}
+${escapeHtml(entry.description || "")}</p>
+          </div>
+        `),
+        renderMultiSection("Awards", content.awards, (entry) => `
+          <div class="content-card">
+            <p class="entry-text"><strong>${escapeHtml(entry.name || "Award")}</strong>
+${escapeHtml(entry.issuer || "")}${entry.date ? " | " + escapeHtml(entry.date) : ""}
+${escapeHtml(entry.description || "")}</p>
+          </div>
+        `),
+        renderMultiSection("Volunteer Experience", content.volunteer, (entry) => `
+          <div class="content-card">
+            <p class="entry-text"><strong>${escapeHtml(entry.role || "Role")}</strong>
+${escapeHtml(entry.organization || "Organization")} | ${escapeHtml(entry.date || "")}
+${escapeHtml(entry.description || "")}</p>
+          </div>
+        `),
+        renderOptionalSection("References", content.references.length ? content.references.map((entry) => `
+          <div class="content-card">
+            <p class="entry-text"><strong>${escapeHtml(entry.name || "Reference")}</strong>
+${escapeHtml(entry.relationship || "")}
+${escapeHtml(entry.contact || "")}</p>
+          </div>
+        `).join("") : "")
+      ].filter(Boolean).join("");
+
+      const sidebarHtml = [
+        renderSidebarSection("Skills", skills.length ? `<div class="skills-list sidebar-card">${skills.map((item) => `<span class="skill-chip">${escapeHtml(item)}</span>`).join("")}</div>` : ""),
+        renderSidebarSection("Education", content.education.length ? content.education.map((entry) => `
+          <div class="sidebar-card">
+            <p class="entry-text"><strong>${escapeHtml(entry.degree || "Degree")}</strong>
+${escapeHtml(entry.school || "School")}
+${escapeHtml(entry.location || "")}
+${escapeHtml(joinRange(entry.start, entry.end))}
+${escapeHtml(entry.description || "")}</p>
+          </div>
+        `).join("") : ""),
+        renderSidebarSection("Certifications", content.certifications.length ? content.certifications.map((entry) => `
+          <div class="sidebar-card">
+            <p class="entry-text"><strong>${escapeHtml(entry.name || "Certification")}</strong>
+${escapeHtml(entry.issuer || "")}
+${escapeHtml(entry.date || "")}
+${escapeHtml(entry.description || "")}</p>
+          </div>
+        `).join("") : ""),
+        renderSidebarSection("Languages", content.languages.length ? `<div class="language-list sidebar-card">${content.languages.map((entry) => `<span class="skill-chip">${escapeHtml(entry.name || "Language")} ${entry.level ? `· ${escapeHtml(entry.level)}` : ""}</span>`).join("")}</div>` : ""),
+        renderSidebarSection("Interests", content.interests.length ? content.interests.map((entry) => `
+          <div class="sidebar-card">
+            <p class="entry-text"><strong>${escapeHtml(entry.name || "Interest")}</strong>
+${escapeHtml(entry.description || "")}</p>
+          </div>
+        `).join("") : "")
+      ].filter(Boolean).join("");
+
+      const baseHeader = `
+        <header class="resume-header">
+          <h1 class="resume-name">${escapeHtml(content.fullName || "Resume Name")}</h1>
+          ${content.headline ? `<p style="margin:10px 0 0; color:var(--template-accent); font-size:0.95rem; font-weight:800; letter-spacing:0.12em; text-transform:uppercase;">${escapeHtml(content.headline)}</p>` : ""}
+          <div class="resume-contact">
+            ${content.email ? `<span class="contact-item">${escapeHtml(content.email)}</span>` : ""}
+            ${content.phone ? `<span class="contact-item">${escapeHtml(content.phone)}</span>` : ""}
+            ${content.location ? `<span class="contact-item">${escapeHtml(content.location)}</span>` : ""}
+            ${content.website ? `<span class="contact-item">${escapeHtml(content.website)}</span>` : ""}
+          </div>
+        </header>
+      `;
+
+      const template = resume.template;
+      if (template === "classic") {
+        els.resumePreview.innerHTML = `${baseHeader}${sidebarHtml}${sectionsHtml}`;
+      } else {
+        els.resumePreview.innerHTML = `
+          <aside class="resume-sidebar">${sidebarHtml}</aside>
+          <section class="resume-main">
+            ${baseHeader}
+            ${sectionsHtml}
+          </section>
+        `;
+      }
+      els.resumePreview.setAttribute("data-template", template);
+    }
+
+    function renderContentSection(title, contentHtml) {
+      return `
+        <section class="resume-section">
+          <h3 class="section-title">${title}</h3>
+          <div class="content-card">${contentHtml}</div>
+        </section>
+      `;
+    }
+
+    function renderMultiSection(title, items, renderer) {
+      if (!items.length) return "";
+      return `
+        <section class="resume-section">
+          <h3 class="section-title">${title}</h3>
+          ${items.map(renderer).join("")}
+        </section>
+      `;
+    }
+
+    function renderOptionalSection(title, html) {
+      if (!html) return "";
+      return `
+        <section class="resume-section">
+          <h3 class="section-title">${title}</h3>
+          ${html}
+        </section>
+      `;
+    }
+
+    function renderSidebarSection(title, html) {
+      if (!html) return "";
+      return `
+        <section class="resume-section">
+          <h3 class="section-title">${title}</h3>
+          ${html}
+        </section>
+      `;
+    }
+
+    function joinRange(start, end) {
+      const parts = [start, end].filter(Boolean);
+      return parts.join(" - ");
+    }
+
+    function splitCommaList(value) {
+      return String(value || "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    function calculateCompleteness() {
+      const resume = activeResume().content;
+      const checks = [
+        { label: "Professional Summary", filled: Boolean(resume.summary.trim()) },
+        { label: "Skills", filled: splitCommaList(resume.skills).length > 0 },
+        { label: "Work Experience", filled: resume.experiences.length > 0 },
+        { label: "Education", filled: resume.education.length > 0 },
+        { label: "Projects", filled: resume.projects.length > 0 },
+        { label: "Certifications", filled: resume.certifications.length > 0 },
+        { label: "Languages", filled: resume.languages.length > 0 },
+        { label: "Awards", filled: resume.awards.length > 0 },
+        { label: "Volunteer Experience", filled: resume.volunteer.length > 0 }
+      ];
+      const filled = checks.filter((item) => item.filled).length;
+      const percent = Math.round((filled / checks.length) * 100);
+      const missing = checks.filter((item) => !item.filled).map((item) => item.label);
+      return { percent, missing };
+    }
+
+    function renderCompleteness() {
+      const { percent, missing } = calculateCompleteness();
+      els.completenessLabel.textContent = `${percent}% Complete`;
+      els.completenessBar.style.width = `${percent}%`;
+      els.missingSectionsList.innerHTML = missing.length
+        ? missing.map((item) => `<span>${escapeHtml(item)}</span>`).join("")
+        : `<span>Everything essential is covered.</span>`;
+    }
+
+    function renderAtsChecker() {
+      const resume = activeResume().content;
+      const words = `${resume.summary} ${resume.skills} ${resume.experiences.map((e) => e.description).join(" ")}`.trim().split(/\s+/).filter(Boolean).length;
+      const completeness = calculateCompleteness().percent;
+      const contactScore = resume.email && resume.phone ? 100 : 65;
+      const lengthScore = words > 140 && words < 800 ? 92 : 72;
+      const keywordScore = Math.min(100, 60 + splitCommaList(resume.skills).length * 6 + resume.projects.length * 8);
+      const formattingScore = ["modern", "classic", "executive", "minimal", "creative", "professional"].includes(activeResume().template) ? 90 : 76;
+      const sectionScore = completeness;
+      const overall = Math.round((contactScore + lengthScore + keywordScore + formattingScore + sectionScore) / 5);
+
+      const cards = [
+        ["Overall ATS Score", `${overall}%`],
+        ["Contact Information", `${contactScore}%`],
+        ["Resume Length", `${lengthScore}%`],
+        ["Keyword Usage", `${Math.min(keywordScore, 100)}%`],
+        ["Formatting", `${formattingScore}%`],
+        ["Missing Sections", `${100 - sectionScore}%`]
+      ];
+
+      const suggestions = [];
+      if (contactScore < 100) suggestions.push("Add both email and phone number.");
+      if (lengthScore < 80) suggestions.push("Expand key accomplishments to balance document length.");
+      if (keywordScore < 80) suggestions.push("Add more role-relevant keywords across skills and projects.");
+      if (sectionScore < 90) suggestions.push("Complete more optional sections to improve coverage.");
+      if (!suggestions.length) suggestions.push("The resume is in strong shape for ATS-style parsing.");
+
+      els.atsGrid.innerHTML = `
+        ${cards.map(([label, value]) => `
+          <div class="ats-card">
+            <strong>${label}</strong>
+            <span style="font-size:1.2rem; font-weight:800; letter-spacing:-0.04em;">${value}</span>
+          </div>
+        `).join("")}
+        <div class="ats-card" style="grid-column:1 / -1;">
+          <strong>Suggestions for Improvement</strong>
+          <div class="suggestion-list" style="margin-top:8px;">${suggestions.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>
+        </div>
+      `;
+    }
+
+    function renderAiActions() {
+      els.aiActions.innerHTML = AI_ACTIONS.map((label) => `
+        <button class="secondary-btn" type="button" data-ai-action="${label}">${label}</button>
+      `).join("");
+    }
+
+    function renderCoverLetter() {
+      const cover = activeCover();
+      els.coverNameInput.value = cover.name;
+      els.coverTemplateSelect.value = cover.template;
+      els.coverRecipientInput.value = cover.recipient;
+      els.coverCompanyInput.value = cover.company;
+      els.coverJobInput.value = cover.jobTitle;
+      els.coverIntroInput.value = cover.intro;
+      els.coverBodyInput.value = cover.body;
+      els.coverClosingInput.value = cover.closing;
+      els.coverSignatureInput.value = cover.signature;
+
+      els.coverPreview.innerHTML = `
+        <h2>${escapeHtml(cover.name)}</h2>
+        <p style="margin-top:18px;">${escapeHtml(cover.recipient)}</p>
+        <p>${escapeHtml(cover.company)}</p>
+        <p style="margin-top:24px;">Dear ${escapeHtml(cover.recipient || "Hiring Manager")},</p>
+        <p style="margin-top:18px;">${escapeHtml(cover.intro)}</p>
+        <p style="margin-top:18px;">${escapeHtml(cover.body)}</p>
+        <p style="margin-top:18px;">${escapeHtml(cover.closing)}</p>
+        <p style="margin-top:28px;">Sincerely,</p>
+        <p style="margin-top:8px; font-weight:700;">${escapeHtml(cover.signature)}</p>
+      `;
+    }
+
+    function renderSettingsPage() {
+      const user = currentUser();
+      if (!user) return;
+      els.settingsPageDisplayName.value = user.profile.name || "";
+      els.settingsPageEmail.value = user.profile.email || "";
+      els.settingsPagePassword.value = "";
+      els.settingsPageLanguage.value = user.profile.language || "English";
+      els.settingsPageTheme.value = user.profile.preferences?.theme || (activeResume().appearance.darkMode ? "dark" : "light");
+      els.settingsNotifyEmail.checked = Boolean(user.profile.notifications?.email);
+      els.settingsNotifyFeatures.checked = Boolean(user.profile.notifications?.features);
+      els.settingsPrivateMode.checked = Boolean(user.profile.privacy.privateMode);
+      els.settingsAnalytics.checked = Boolean(user.profile.privacy.analytics);
+      els.settingsPublicProfile.checked = Boolean(user.profile.privacy.publicProfileReady);
+    }
+
+    function applySettingsPage() {
+      const user = currentUser();
+      if (!user) return;
+      const nextName = els.settingsPageDisplayName.value.trim();
+      const currentEmail = state.currentUserEmail;
+      const nextEmail = els.settingsPageEmail.value.trim().toLowerCase();
+      if (!nextName || !nextEmail) {
+        els.settingsPageStatus.textContent = "Display name and email are required.";
+        return;
+      }
+      if (nextEmail !== currentEmail && state.users[nextEmail]) {
+        els.settingsPageStatus.textContent = "That email is already in use on this device.";
+        return;
+      }
+      user.profile.name = nextName;
+      user.profile.email = nextEmail;
+      if (els.settingsPagePassword.value.trim()) {
+        user.profile.password = els.settingsPagePassword.value.trim();
+      }
+      user.profile.language = els.settingsPageLanguage.value;
+      user.profile.notifications.email = els.settingsNotifyEmail.checked;
+      user.profile.notifications.features = els.settingsNotifyFeatures.checked;
+      user.profile.privacy.privateMode = els.settingsPrivateMode.checked;
+      user.profile.privacy.analytics = els.settingsAnalytics.checked;
+      user.profile.privacy.publicProfileReady = els.settingsPublicProfile.checked;
+      user.profile.preferences.theme = els.settingsPageTheme.value;
+      const darkMode = els.settingsPageTheme.value === "dark";
+      activeResume().appearance.darkMode = darkMode;
+      if (nextEmail !== currentEmail) {
+        state.users[nextEmail] = user;
+        delete state.users[currentEmail];
+        state.currentUserEmail = nextEmail;
+      }
+      persistState(false);
+      updateProfileUi();
+      applyAppearance();
+      els.settingsPagePassword.value = "";
+      els.settingsPageStatus.textContent = "Settings saved.";
+      notify("Settings saved", "Your account settings were updated.");
+    }
+
+    function handleAvatarUpload(file) {
+      const user = currentUser();
+      if (!user || !file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        user.profile.avatar = String(reader.result || "");
+        persistState(false);
+        updateProfileUi();
+        renderSettingsPage();
+        els.settingsPageStatus.textContent = "Profile picture updated.";
+        notify("Profile picture updated", "Your avatar was saved locally.");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function refreshResumeUi(options = {}) {
+      const {
+        fields = false,
+        meta = true,
+        dynamic = false,
+        appearance = false,
+        gallery = false,
+        preview = true,
+        completeness = true,
+        ats = true,
+        dashboard = false
+      } = options;
+
+      if (fields) {
+        bindResumeFields();
+      } else if (meta) {
+        renderResumeEditorMeta();
+      }
+
+      if (dynamic) renderDynamicSections();
+      if (appearance) applyAppearance();
+      if (gallery) buildTemplateGallery();
+      if (preview) renderResumePreview();
+      if (completeness) renderCompleteness();
+      if (ats) renderAtsChecker();
+      if (dashboard) renderDashboard();
+    }
+
+    function refreshCoverUi(options = {}) {
+      const { dashboard = false } = options;
+      renderCoverLetter();
+      if (dashboard) renderDashboard();
+    }
+
+    function createStarterResume(type) {
+      const resume = DEFAULT_RESUME();
+      resume.type = type;
+      resume.name = `${type} Resume`;
+
+      if (type === "Student") {
+        resume.content.headline = "Student Resume";
+        resume.content.summary = "Motivated student building a strong foundation through coursework, leadership activities, and project-based learning.";
+        resume.content.experiences = [];
+        resume.content.education[0].degree = "B.A. Candidate";
+        resume.content.projects = [{ name: "Campus Research Project", role: "Team Member", link: "", description: "Collaborated on research, presentation development, and documentation." }];
+      } else if (type === "Internship") {
+        resume.content.headline = "Internship Candidate";
+        resume.content.summary = "Early-career candidate with strong communication, collaboration, and project support skills looking for internship opportunities.";
+        resume.content.projects = [{ name: "Course Capstone", role: "Project Contributor", link: "", description: "Delivered research, planning, and presentation work under deadlines." }];
+      } else if (type === "Career Change") {
+        resume.content.headline = "Career Change Candidate";
+        resume.content.summary = "Results-oriented professional repositioning transferable skills into a new role with a focus on adaptability and measurable impact.";
+      } else if (type === "Executive") {
+        resume.content.headline = "Executive Leader";
+        resume.content.summary = "Executive leader with experience shaping strategy, scaling teams, and driving operational performance across complex organizations.";
+        resume.template = "executive";
+      } else if (type === "Freelancer") {
+        resume.content.headline = "Freelance Consultant";
+        resume.content.summary = "Independent professional delivering client-ready work across multiple projects, timelines, and stakeholder groups.";
+        resume.content.projects = [{ name: "Client Delivery Program", role: "Freelancer", link: "", description: "Managed client communication, scope delivery, and final handoff across multiple engagements." }];
+      }
+
+      return resume;
+    }
+
+    function renderAll() {
+      buildTemplateGallery();
+      populateTemplateSelects();
+      bindResumeFields();
+      renderDynamicSections();
+      applyAppearance();
+      renderResumePreview();
+      renderCompleteness();
+      renderAtsChecker();
+      renderAiActions();
+      renderDashboard();
+      renderCoverLetter();
+      renderSettingsPage();
+      updateProfileUi();
+      setView(state.currentView || "dashboard");
+    }
+
+    function updateResumeField(field, value) {
+      const resume = activeResume();
+      if (field in resume.content) {
+        resume.content[field] = value;
+      } else if (field in resume) {
+        resume[field] = value;
+      }
+      resume.updatedAt = new Date().toISOString();
+      persistState("resume");
+      refreshResumeUi({
+        meta: true,
+        preview: true,
+        completeness: true,
+        ats: true,
+        dashboard: field === "name" || field === "fullName"
+      });
+    }
+
+    function addSectionEntry(sectionKey) {
+      const resume = activeResume();
+      const config = DYNAMIC_SECTIONS.find((item) => item.key === sectionKey);
+      const entry = {};
+      config.fields.forEach((field) => {
+        entry[field.key] = "";
+      });
+      resume.content[sectionKey].push(entry);
+      resume.updatedAt = new Date().toISOString();
+      persistState("resume");
+      refreshResumeUi({
+        meta: true,
+        dynamic: true,
+        preview: true,
+        completeness: true,
+        ats: true,
+        dashboard: false
+      });
+    }
+
+    function deleteSectionEntry(sectionKey, index) {
+      const resume = activeResume();
+      resume.content[sectionKey].splice(index, 1);
+      resume.updatedAt = new Date().toISOString();
+      persistState("resume");
+      refreshResumeUi({
+        meta: true,
+        dynamic: true,
+        preview: true,
+        completeness: true,
+        ats: true
+      });
+    }
+
+    function moveSectionEntry(sectionKey, index, direction) {
+      const resume = activeResume();
+      const list = resume.content[sectionKey];
+      const target = index + direction;
+      if (target < 0 || target >= list.length) return;
+      [list[index], list[target]] = [list[target], list[index]];
+      resume.updatedAt = new Date().toISOString();
+      persistState("resume");
+      refreshResumeUi({
+        meta: true,
+        dynamic: true,
+        preview: true,
+        completeness: true,
+        ats: true
+      });
+    }
+
+    function updateSectionEntry(sectionKey, index, field, value) {
+      const resume = activeResume();
+      resume.content[sectionKey][index][field] = value;
+      resume.updatedAt = new Date().toISOString();
+      persistState("resume");
+      refreshResumeUi({
+        meta: true,
+        preview: true,
+        completeness: true,
+        ats: true
+      });
+    }
+
+    function createResume() {
+      const user = currentUser();
+      if (!user) {
+        openAuthModal("signup");
+        return;
+      }
+      const resume = DEFAULT_RESUME();
+      resume.name = `Resume ${user.resumes.length + 1}`;
+      user.resumes.unshift(resume);
+      state.currentResumeId = resume.id;
+      state.currentView = "editor";
+      persistState("resume");
+      renderAll();
+      notify("Resume created", `${resume.name} is ready to edit.`);
+    }
+
+    function duplicateResume(id) {
+      const user = currentUser();
+      if (!user) return;
+      const original = user.resumes.find((resume) => resume.id === id);
+      if (!original) return;
+      const duplicate = JSON.parse(JSON.stringify(original));
+      duplicate.id = crypto.randomUUID();
+      duplicate.name = `${original.name} Copy`;
+      duplicate.updatedAt = new Date().toISOString();
+      duplicate.lastOpened = new Date().toISOString();
+      user.resumes.unshift(duplicate);
+      state.currentResumeId = duplicate.id;
+      state.currentView = "editor";
+      persistState("resume");
+      renderAll();
+      notify("Resume duplicated", `${duplicate.name} was added to your dashboard.`);
+    }
+
+    function renameResume(id) {
+      const user = currentUser();
+      if (!user) return;
+      const target = user.resumes.find((resume) => resume.id === id);
+      if (!target) return;
+      const nextName = prompt("Rename resume", target.name);
+      if (!nextName) return;
+      const previousName = target.name;
+      target.name = nextName.trim() || target.name;
+      target.updatedAt = new Date().toISOString();
+      persistState("resume");
+      renderAll();
+      if (target.name !== previousName) {
+        notify("Resume renamed", `Now saved as ${target.name}.`);
+      }
+    }
+
+    function deleteResume(id) {
+      const user = currentUser();
+      if (!user) return;
+      if (user.resumes.length === 1) {
+        alert("At least one resume must remain in the dashboard.");
+        return;
+      }
+      if (!confirm("Delete this resume?")) return;
+      user.resumes = user.resumes.filter((resume) => resume.id !== id);
+      if (state.currentResumeId === id) {
+        state.currentResumeId = user.resumes[0].id;
+      }
+      persistState("resume");
+      renderAll();
+      notify("Resume deleted", "The selected resume was removed from your dashboard.");
+    }
+
+    function toggleFavoriteResume(id = state.currentResumeId) {
+      const collection = currentResumeCollection();
+      const target = collection.find((resume) => resume.id === id);
+      if (!target) return;
+      target.favorite = !target.favorite;
+      target.updatedAt = new Date().toISOString();
+      persistState("resume");
+      refreshResumeUi({
+        meta: true,
+        preview: false,
+        completeness: false,
+        ats: false,
+        dashboard: true,
+        gallery: true
+      });
+    }
+
+    function openResume(id) {
+      const collection = currentResumeCollection();
+      const target = collection.find((resume) => resume.id === id);
+      if (!target) return;
+      target.lastOpened = new Date().toISOString();
+      state.currentResumeId = id;
+      state.currentView = "editor";
+      persistState("resume");
+      renderAll();
+    }
+
+    function clearResume() {
+      if (!confirm("Clear the current resume and restore default sample content?")) return;
+      const resume = activeResume();
+      const fresh = DEFAULT_RESUME();
+      fresh.id = resume.id;
+      fresh.name = resume.name;
+      fresh.favorite = resume.favorite;
+      fresh.template = resume.template;
+      fresh.appearance = { ...resume.appearance };
+      Object.assign(resume, fresh);
+      persistState("resume");
+      renderAll();
+      notify("Resume reset", "Sample content was restored for the active resume.");
+    }
+
+    function updateAppearance(field, value) {
+      const resume = activeResume();
+      resume.appearance[field] = value;
+      resume.updatedAt = new Date().toISOString();
+      persistState("resume");
+      refreshResumeUi({
+        meta: true,
+        appearance: true,
+        preview: true,
+        completeness: false,
+        ats: false
+      });
+      refreshCoverUi();
+    }
+
+    function analyzerPopulateExample() {
+      const resume = activeResume();
+      resume.name = "Uploaded Resume";
+      resume.template = "professional";
+      resume.content = {
+        fullName: "Jordan Ramirez",
+        headline: "Senior Product Operations Manager",
+        email: "jordan.ramirez@email.com",
+        phone: "(206) 555-0174",
+        location: "Austin, Texas",
+        website: "linkedin.com/in/jordan-ramirez",
+        summary: "Operations and product leader with experience improving cross-functional planning, streamlining reporting, and supporting high-growth teams through structured execution and stakeholder alignment.",
+        skills: "Program Management, Cross-Functional Leadership, OKRs, Data Analysis, Process Design, Airtable, SQL",
+        experiences: [
+          {
+            title: "Senior Product Operations Manager",
+            company: "Northlane Systems",
+            location: "Austin, Texas",
+            start: "2021",
+            end: "Present",
+            description: "Built operating cadences for roadmap planning, reduced status reporting time by 35%, and improved launch readiness across product, engineering, and support teams."
+          },
+          {
+            title: "Business Operations Analyst",
+            company: "Scalegrid",
+            location: "Seattle, Washington",
+            start: "2018",
+            end: "2021",
+            description: "Developed reporting dashboards, documented internal workflows, and supported process redesign initiatives across revenue and success teams."
+          }
+        ],
+        education: [{
+          degree: "B.S. in Economics",
+          school: "University of Washington",
+          location: "Seattle, Washington",
+          start: "2014",
+          end: "2018",
+          description: "Focused on analytics, forecasting, and organizational decision-making."
+        }],
+        projects: [{
+          name: "Launch Readiness Framework",
+          role: "Project Lead",
+          link: "internal-playbook.example",
+          description: "Designed a repeatable framework for cross-functional launch reviews and handoffs."
+        }],
+        certifications: [{
+          name: "Certified Scrum Product Owner",
+          issuer: "Scrum Alliance",
+          date: "2023",
+          description: "Credential focused on agile product planning and stakeholder alignment."
+        }],
+        languages: [{
+          name: "English",
+          level: "Native"
+        }, {
+          name: "Spanish",
+          level: "Professional"
+        }],
+        interests: [{
+          name: "Mentoring",
+          description: "Volunteer mentor for early-career operations professionals."
+        }],
+        references: [{
+          name: "Available upon request",
+          relationship: "",
+          contact: ""
+        }],
+        awards: [{
+          name: "Operational Impact Award",
+          issuer: "Northlane Systems",
+          date: "2024",
+          description: "Recognized for building scalable planning processes across multiple teams."
+        }],
+        volunteer: [{
+          organization: "Austin Career Resource Center",
+          role: "Workshop Facilitator",
+          date: "2022 - Present",
+          description: "Lead resume and interview workshops for job seekers transitioning careers."
+        }]
+      };
+      state.currentView = "editor";
+      persistState("resume");
+      renderAll();
+    }
+
+    function simulateUpload(file) {
+      if (!file) return;
+      const ext = file.name.toLowerCase();
+      if (!ext.endsWith(".pdf") && !ext.endsWith(".doc") && !ext.endsWith(".docx")) {
+        alert("Please upload a PDF or DOCX file.");
+        return;
+      }
+      els.uploadProgressCard.classList.remove("hidden");
+      els.uploadSuccessCard.classList.add("hidden");
+      els.uploadProgressText.innerHTML = "<span>Preparing upload</span>";
+      els.uploadProgressBar.style.width = "0%";
+      const steps = [18, 42, 67, 88, 100];
+      let index = 0;
+      const interval = setInterval(() => {
+        const value = steps[index];
+        els.uploadProgressBar.style.width = `${value}%`;
+        els.uploadProgressText.innerHTML = `<span>${value < 100 ? "Parsing resume content" : "Finished analyzing upload"}</span>`;
+        index += 1;
+        if (index === steps.length) {
+          clearInterval(interval);
+          setTimeout(() => {
+            analyzerPopulateExample();
+            els.uploadSuccessCard.classList.remove("hidden");
+            els.uploadProgressCard.classList.add("hidden");
+            notify("Upload complete", "Example resume content was inserted into the editor.");
+          }, 400);
+        }
+      }, 300);
+    }
+
+    function updateCoverField(field, value) {
+      const cover = activeCover();
+      cover[field] = value;
+      cover.updatedAt = new Date().toISOString();
+      persistState("cover");
+      refreshCoverUi({ dashboard: true });
+    }
+
+    function downloadPdfFor(element, filename) {
+      const options = {
+        margin: 0,
+        filename,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["avoid-all"] }
+      };
+
+      html2pdf().set(options).from(element).save();
+    }
+
+    function formatDate(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "Recently";
+      return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    }
+
+    function initScrollReveal() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+          }
+        });
+      }, { threshold: 0.15 });
+      els.scrollRevealItems.forEach((item) => observer.observe(item));
+    }
+
+    function bindStaticEvents() {
+      [els.heroGetStartedBtn, els.navGetStartedBtn, els.mobileGetStartedBtn].forEach((button) => {
+        button.addEventListener("click", () => {
+          openAuthModal("signup");
+          els.mobileNav.classList.remove("open");
+        });
+      });
+
+      [els.heroLoginBtn, els.navLoginBtn, els.mobileLoginBtn].forEach((button) => {
+        button.addEventListener("click", () => {
+          openAuthModal("login");
+          els.mobileNav.classList.remove("open");
+        });
+      });
+
+      els.jumpPreviewBtn.addEventListener("click", () => {
+        document.getElementById("workspace").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+
+      els.workspaceSettingsBtn.addEventListener("click", () => {
+        setView("settings");
+        renderSettingsPage();
+      });
+
+      els.footerCtaBtn.addEventListener("click", () => {
+        document.getElementById("workspace").scrollIntoView({ behavior: "smooth", block: "start" });
+        setView("editor");
+      });
+
+      els.hamburgerBtn.addEventListener("click", () => {
+        els.mobileNav.classList.toggle("open");
+      });
+
+      els.profileMenuBtn.addEventListener("click", () => {
+        els.profileMenu.classList.toggle("open");
+        els.profileMenuBtn.classList.toggle("open", els.profileMenu.classList.contains("open"));
+        els.profileMenuBtn.setAttribute("aria-expanded", String(els.profileMenu.classList.contains("open")));
+      });
+
+      els.profileMenu.addEventListener("click", (event) => {
+        const target = event.target.closest("[data-go]");
+        if (!target) return;
+        const destination = target.getAttribute("data-go");
+        if (destination === "dashboard" || destination === "resumes") setView("dashboard");
+        if (destination === "newresume") createResume();
+        if (destination === "coverletters") setView("coverletter");
+        if (destination === "appearance" || destination === "settings" || destination === "privacy") {
+          setView("settings");
+          renderSettingsPage();
+        }
+        if (destination === "help") {
+          setView("help");
+        }
+        els.profileMenu.classList.remove("open");
+        els.profileMenuBtn.classList.remove("open");
+        els.profileMenuBtn.setAttribute("aria-expanded", "false");
+      });
+
+      els.profileSignOutBtn.addEventListener("click", () => {
+        logout();
+        els.profileMenu.classList.remove("open");
+        els.profileMenuBtn.classList.remove("open");
+        els.profileMenuBtn.setAttribute("aria-expanded", "false");
+      });
+
+      els.closeAuthBtn.addEventListener("click", closeAuthModal);
+      els.showLoginBtn.addEventListener("click", () => setAuthMode("login"));
+      els.showSignupBtn.addEventListener("click", () => setAuthMode("signup"));
+
+      els.authModal.addEventListener("click", (event) => {
+        if (event.target === els.authModal) closeAuthModal();
+      });
+
+      els.closeComingSoonBtn.addEventListener("click", closeComingSoon);
+      els.comingSoonModal.addEventListener("click", (event) => {
+        if (event.target === els.comingSoonModal) closeComingSoon();
+      });
+      els.welcomeModal.addEventListener("click", (event) => {
+        if (event.target === els.welcomeModal) closeWelcomeModal();
+      });
+
+      els.closeSettingsBtn.addEventListener("click", closeAccountSettings);
+      els.accountSettingsModal.addEventListener("click", (event) => {
+        if (event.target === els.accountSettingsModal) closeAccountSettings();
+      });
+
+      els.settingsTabs.forEach((button) => {
+        button.addEventListener("click", () => setSettingsTab(button.dataset.settingsTab));
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeAuthModal();
+          closeComingSoon();
+          closeAccountSettings();
+          closeWelcomeModal();
+          els.profileMenu.classList.remove("open");
+          els.profileMenuBtn.classList.remove("open");
+          els.profileMenuBtn.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      els.signupForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const form = new FormData(els.signupForm);
+        const name = String(form.get("signupName") || "").trim();
+        const email = String(form.get("signupEmail") || "").trim().toLowerCase();
+        const password = String(form.get("signupPassword") || "");
+        const confirm = String(form.get("signupConfirmPassword") || "");
+        if (!name || !email || !password || !confirm) {
+          els.authStatus.textContent = "Please complete all fields.";
+          return;
+        }
+        if (password !== confirm) {
+          els.authStatus.textContent = "Passwords do not match.";
+          return;
+        }
+        ensureUserWorkspace(email, name, password);
+        state.users[email].profile.password = password;
+        state.users[email].profile.onboardingCompleted = false;
+        state.currentUserEmail = email;
+        state.currentResumeId = state.users[email].resumes[0].id;
+        state.currentCoverId = state.users[email].coverLetters[0].id;
+        state.currentView = "dashboard";
+        state.pendingOnboardingEmail = email;
+        persistState(false);
+        els.authStatus.textContent = "Account created. Let’s build your first resume.";
+        els.signupForm.reset();
+        renderAll();
+        setTimeout(() => {
+          closeAuthModal();
+          openWelcomeModal();
+        }, 500);
+      });
+
+      els.loginForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const form = new FormData(els.loginForm);
+        const email = String(form.get("loginEmail") || "").trim().toLowerCase();
+        const password = String(form.get("loginPassword") || "");
+        const user = state.users[email];
+        if (!user || user.profile.password !== password) {
+          els.authStatus.textContent = "Invalid email or password.";
+          return;
+        }
+        state.currentUserEmail = email;
+        state.currentResumeId = user.resumes[0].id;
+        state.currentCoverId = user.coverLetters[0].id;
+        state.currentView = "dashboard";
+        persistState(false);
+        renderAll();
+        els.authStatus.textContent = "Signed in successfully.";
+        els.loginForm.reset();
+        setTimeout(closeAuthModal, 800);
+      });
+
+      els.workspaceTabs.forEach((tab) => {
+        tab.addEventListener("click", () => setView(tab.dataset.view));
+      });
+
+      els.createResumeBtn.addEventListener("click", createResume);
+      els.resumeSearchInput.addEventListener("input", () => {
+        state.resumeSearch = els.resumeSearchInput.value;
+        persistState(false);
+        renderDashboard();
+      });
+      els.resumeSortSelect.addEventListener("change", () => {
+        state.resumeSort = els.resumeSortSelect.value;
+        persistState(false);
+        renderDashboard();
+      });
+
+      document.querySelectorAll("[data-jump-target]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const target = document.getElementById(button.dataset.jumpTarget);
+          if (!target) return;
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+
+      els.dashboardGrid.addEventListener("click", (event) => {
+        const action = event.target.closest("[data-action]");
+        if (!action) return;
+        const id = action.dataset.id;
+        const type = action.dataset.action;
+        if (type === "open") openResume(id);
+        if (type === "duplicate") duplicateResume(id);
+        if (type === "rename") renameResume(id);
+        if (type === "delete") deleteResume(id);
+        if (type === "favorite") toggleFavoriteResume(id);
+      });
+
+      els.resumeNameInput.addEventListener("input", () => updateResumeField("name", els.resumeNameInput.value));
+      els.resumeTemplateSelect.addEventListener("change", () => {
+        const resume = activeResume();
+        resume.template = els.resumeTemplateSelect.value;
+        resume.updatedAt = new Date().toISOString();
+        persistState();
+        renderAll();
+      });
+
+      [
+        ["fullNameInput", "fullName"],
+        ["headlineInput", "headline"],
+        ["emailInput", "email"],
+        ["phoneInput", "phone"],
+        ["locationInput", "location"],
+        ["websiteInput", "website"],
+        ["summaryInput", "summary"],
+        ["skillsInput", "skills"]
+      ].forEach(([id, field]) => {
+        els[id].addEventListener("input", () => updateResumeField(field, els[id].value));
+      });
+
+      els.dynamicSections.addEventListener("click", (event) => {
+        const add = event.target.closest("[data-section-add]");
+        if (add) {
+          addSectionEntry(add.dataset.sectionAdd);
+          return;
+        }
+        const del = event.target.closest("[data-entry-delete]");
+        if (del) {
+          deleteSectionEntry(del.dataset.entryDelete, Number(del.dataset.index));
+          return;
+        }
+        const move = event.target.closest("[data-entry-move]");
+        if (move) {
+          moveSectionEntry(move.dataset.entryMove, Number(move.dataset.index), Number(move.dataset.dir));
+        }
+      });
+
+      els.dynamicSections.addEventListener("input", (event) => {
+        const input = event.target.closest("[data-entry-input]");
+        if (!input) return;
+        updateSectionEntry(input.dataset.entryInput, Number(input.dataset.index), input.dataset.field, input.value);
+      });
+
+      els.favoriteResumeBtn.addEventListener("click", () => toggleFavoriteResume());
+      els.clearResumeBtn.addEventListener("click", clearResume);
+      els.downloadResumePdfBtn.addEventListener("click", () => {
+        downloadPdfFor(els.resumePreview, `${(activeResume().name || "resume").replace(/\s+/g, "-").toLowerCase()}.pdf`);
+      });
+
+      els.aiActions.addEventListener("click", (event) => {
+        const action = event.target.closest("[data-ai-action]");
+        if (!action) return;
+        openComingSoon(action.dataset.aiAction, "This AI workflow is prepared for future integration and will plug directly into the current editor state.");
+      });
+
+      els.fontSelect.addEventListener("change", () => updateAppearance("font", els.fontSelect.value));
+      els.accentSelect.addEventListener("change", () => updateAppearance("accent", els.accentSelect.value));
+      els.spacingRange.addEventListener("input", () => updateAppearance("spacing", Number(els.spacingRange.value)));
+      els.zoomRange.addEventListener("input", () => updateAppearance("zoom", Number(els.zoomRange.value)));
+      els.themeToggleBtn.addEventListener("click", () => updateAppearance("darkMode", !activeResume().appearance.darkMode));
+
+      els.analyzerFileInput.addEventListener("change", () => {
+        const [file] = els.analyzerFileInput.files;
+        simulateUpload(file);
+      });
+
+      [
+        ["coverNameInput", "name"],
+        ["coverTemplateSelect", "template"],
+        ["coverRecipientInput", "recipient"],
+        ["coverCompanyInput", "company"],
+        ["coverJobInput", "jobTitle"],
+        ["coverIntroInput", "intro"],
+        ["coverBodyInput", "body"],
+        ["coverClosingInput", "closing"],
+        ["coverSignatureInput", "signature"]
+      ].forEach(([id, field]) => {
+        els[id].addEventListener(field === "template" ? "change" : "input", () => updateCoverField(field, els[id].value));
+      });
+
+      els.downloadCoverPdfBtn.addEventListener("click", () => {
+        downloadPdfFor(els.coverPreview, `${(activeCover().name || "cover-letter").replace(/\s+/g, "-").toLowerCase()}.pdf`);
+      });
+
+      els.onboardingOptions.forEach((button) => {
+        button.addEventListener("click", () => {
+          const email = state.pendingOnboardingEmail || state.currentUserEmail;
+          if (!email || !state.users[email]) return;
+          const starter = createStarterResume(button.dataset.onboardingType);
+          state.users[email].resumes = [starter];
+          state.currentResumeId = starter.id;
+          state.users[email].profile.onboardingCompleted = true;
+          state.pendingOnboardingEmail = null;
+          state.currentView = "dashboard";
+          persistState(false);
+          closeWelcomeModal();
+          renderAll();
+          notify("Starter resume created", `${button.dataset.onboardingType} resume added to your dashboard.`);
+        });
+      });
+
+      els.saveAccountSettingsBtn.addEventListener("click", () => {
+        const user = currentUser();
+        if (!user) return;
+        const nextName = els.settingsNameInput.value.trim();
+        const nextPassword = els.settingsPasswordInput.value;
+        if (!nextName) {
+          els.settingsStatus.textContent = "Full name is required.";
+          return;
+        }
+        user.profile.name = nextName;
+        if (nextPassword) {
+          user.profile.password = nextPassword;
+        }
+        persistState(false);
+        updateProfileUi();
+        els.settingsPasswordInput.value = "";
+        els.settingsStatus.textContent = "Account settings saved.";
+        notify("Account updated", "Your profile details were saved.");
+      });
+
+      els.savePrivacySettingsBtn.addEventListener("click", () => {
+        const user = currentUser();
+        if (!user) return;
+        user.profile.privacy.privateMode = els.privacyPrivateModeInput.checked;
+        user.profile.privacy.analytics = els.privacyAnalyticsInput.checked;
+        user.profile.privacy.publicProfileReady = els.privacyPublicProfileInput.checked;
+        persistState(false);
+        els.settingsStatus.textContent = "Privacy settings saved.";
+        notify("Privacy updated", "Your privacy preferences were saved.");
+      });
+
+      els.savePreferenceSettingsBtn.addEventListener("click", () => {
+        const user = currentUser();
+        if (!user) return;
+        user.profile.preferences.emailUpdates = els.preferencesEmailUpdatesInput.checked;
+        user.profile.preferences.rememberView = els.preferencesRememberViewInput.checked;
+        persistState(false);
+        els.settingsStatus.textContent = "Preferences saved.";
+        notify("Preferences updated", "Your account preferences were saved.");
+      });
+
+      els.saveSettingsPageBtn.addEventListener("click", applySettingsPage);
+      els.settingsPageAvatar.addEventListener("change", () => {
+        const [file] = els.settingsPageAvatar.files;
+        handleAvatarUpload(file);
+      });
+
+      els.deleteAccountBtn.addEventListener("click", () => {
+        const user = currentUser();
+        if (!user) return;
+        if (!confirm("Delete this local account and all saved resumes on this device?")) return;
+        const email = state.currentUserEmail;
+        closeAccountSettings();
+        delete state.users[email];
+        state.currentUserEmail = null;
+        state.currentResumeId = state.guest.resume.id;
+        state.currentCoverId = state.guest.cover.id;
+        persistState(false);
+        renderAll();
+      });
+
+      els.deleteAccountPageBtn.addEventListener("click", () => {
+        const user = currentUser();
+        if (!user) return;
+        if (!confirm("Delete this local account and all saved resumes on this device?")) return;
+        const email = state.currentUserEmail;
+        delete state.users[email];
+        state.currentUserEmail = null;
+        state.currentResumeId = state.guest.resume.id;
+        state.currentCoverId = state.guest.cover.id;
+        state.currentView = "dashboard";
+        persistState(false);
+        renderAll();
+      });
+
+      [els.helpContactBtn, els.helpBugBtn, els.helpFeatureBtn].forEach((button) => {
+        button.addEventListener("click", () => {
+          els.helpStatus.textContent = "Thanks. Your message was saved locally for this prototype.";
+          notify("Request saved", "Your help request was recorded in this prototype.");
+        });
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest(".topbar-actions")) {
+          els.profileMenu.classList.remove("open");
+          els.profileMenuBtn.classList.remove("open");
+          els.profileMenuBtn.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      window.addEventListener("scroll", updateNavActive, { passive: true });
+      updateNavActive();
+    }
+
+    function logout() {
+      state.currentUserEmail = null;
+      state.currentResumeId = state.guest.resume.id;
+      state.currentCoverId = state.guest.cover.id;
+      persistState();
+      renderAll();
+    }
+
+    renderAll();
+    bindStaticEvents();
+    initScrollReveal();
+  </script>
+</body>
+</html>
